@@ -1,0 +1,39 @@
+# Standard SvelteKit & Build Outputs
+node_modules
+.output
+.vercel
+.netlify
+.wrangler
+.svelte-kit
+/build
+
+# OS Generated Files
+.DS_Store
+Thumbs.db
+__MACOSX/
+
+# Environment Variables & Secrets
+.env
+.env.*
+!.env.example
+!.env.test
+
+# Vite / Tooling
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+
+# Editor / Workspace settings
+.vscode/
+
+# Project-specific clutter & Archives
+*.zip
+HW3.zip
+FranklinZ_OCHRE.zip
+poetry-hw/
+Svelte/
+
+# Root level duplicates (Keep these out of the ochre-app repo)
+index.html
+style.css
+package-lock.json
+package.json
