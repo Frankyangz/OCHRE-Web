@@ -14,7 +14,9 @@
 	>
 		<div class="mx-auto flex h-13 max-w-[92rem] items-center gap-4 px-5 sm:px-8">
 			<a href="/" class="group flex items-center gap-2.5 no-underline">
-				<span class="wedge size-3 bg-lapis transition-transform group-hover:scale-110"></span>
+				<span
+					class="wedge h-4 w-2.5 origin-bottom bg-lapis transition-transform group-hover:scale-110"
+				></span>
 				<span class="label text-ink!">Ras Shamra Tablet Inventory</span>
 			</a>
 

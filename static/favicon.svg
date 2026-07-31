@@ -1,6 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
   <rect width="32" height="32" rx="6" fill="#14161a" />
-  <!-- The Ugaritic stylus wedge, over the ring that marks the absent centre. -->
-  <circle cx="16" cy="16" r="9.5" fill="none" stroke="#b0731c" stroke-width="1.5" opacity="0.55" />
-  <path d="M16 25 L8.5 8 L23.5 8 Z" fill="#5a79d8" />
+  <!-- The ring is Ugarit, the absent centre; the wedge is a stylus impression. -->
+  <circle cx="16" cy="16" r="10" fill="none" stroke="#b0731c" stroke-width="1.4" opacity="0.5" />
+  <g transform="translate(16 4)">
+    <path d="M-6 0 H0 V24 L-0.9 11 Z" fill="#8fa8ee" />
+    <path d="M0 0 H6 L0.9 11 L0 24 Z" fill="#3f5cc4" />
+  </g>
 </svg>

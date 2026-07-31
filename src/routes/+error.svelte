@@ -53,8 +53,8 @@
 	}
 
 	.back-wedge {
-		width: 9px;
-		height: 11px;
+		width: 8px;
+		height: 13px;
 		background: var(--lapis);
 		rotate: -90deg;
 		transition: translate 160ms cubic-bezier(0.16, 1, 0.3, 1);

@@ -266,12 +266,27 @@
 	}
 
 	/*
-	 * The wedge. The Ugaritic alphabet is written with a triangular stylus
-	 * pressed into clay, so the wedge is this catalogue's atomic mark: it is
-	 * the map pin, the active-filter bullet, and the list marker.
+	 * The wedge. Every Ugaritic sign is built from impressions of a triangular
+	 * stylus in clay, so the wedge is this catalogue's atomic mark: the map pin,
+	 * the active-filter bullet, the list marker, the logo.
+	 *
+	 * A real wedge is not a triangle — it is a broad head tapering to a long
+	 * tail — which is what stops the mark reading as a generic pin.
 	 */
 	.wedge {
-		clip-path: polygon(50% 100%, 0 0, 100% 0);
+		/* Straight-line sampling of the same concave curve the map marker draws,
+		   since clip-path polygons cannot carry a bezier. */
+		clip-path: polygon(
+			4% 0,
+			96% 0,
+			78% 19%,
+			65% 42%,
+			55% 69%,
+			50% 100%,
+			45% 69%,
+			35% 42%,
+			22% 19%
+		);
 	}
 }
 

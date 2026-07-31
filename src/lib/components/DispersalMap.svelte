@@ -208,7 +208,16 @@
 					class:is-active={isActive}
 					style="--reveal-delay: {compact ? 0 : revealDelay(entry)}ms"
 				>
-					<span class="wedge find-wedge"></span>
+					<!--
+						A cuneiform wedge: the impression a triangular stylus leaves in
+						clay, which is the unit every Ugaritic sign is built from. Drawn
+						as two facets so it reads as pressed into the surface rather than
+						drawn on it. The tail's point marks the findspot.
+					-->
+					<svg class="find-wedge" viewBox="0 0 12 24" width="13" height="26" aria-hidden="true">
+						<path class="facet-lit" d="M0.5 0 H6 V24 Q5.2 8 0.5 0 Z" />
+						<path class="facet-shade" d="M6 0 H11.5 Q6.8 8 6 24 Z" />
+					</svg>
 					<span class="sr-only">
 						{entry.label} — {entry.findspot ?? 'unlocated'}
 					</span>
@@ -324,21 +333,37 @@
 
 	.find-wedge {
 		display: block;
-		width: 11px;
-		height: 14px;
-		background: oklch(0.62 0.17 268);
-		outline: 1px solid oklch(0.86 0.06 268 / 0.5);
-		outline-offset: -1px;
-		transition:
-			background 160ms ease,
-			transform 160ms cubic-bezier(0.16, 1, 0.3, 1);
+		overflow: visible;
 		transform-origin: 50% 100%;
+		transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1);
+		filter: drop-shadow(0 1px 2px oklch(0.12 0.02 250 / 0.7));
+	}
+
+	/* Two facets, lit from the left, the way a stylus impression catches
+	   raking light across a tablet. */
+	.facet-lit {
+		fill: oklch(0.74 0.13 268);
+		transition: fill 160ms ease;
+	}
+
+	.facet-shade {
+		fill: oklch(0.54 0.16 268);
+		transition: fill 160ms ease;
 	}
 
 	.find:hover .find-wedge,
 	.find.is-active .find-wedge {
-		background: oklch(0.82 0.14 268);
-		transform: scale(1.32);
+		transform: scale(1.28);
+	}
+
+	.find:hover .facet-lit,
+	.find.is-active .facet-lit {
+		fill: oklch(0.92 0.1 90);
+	}
+
+	.find:hover .facet-shade,
+	.find.is-active .facet-shade {
+		fill: oklch(0.68 0.15 70);
 	}
 
 	@keyframes rise {
