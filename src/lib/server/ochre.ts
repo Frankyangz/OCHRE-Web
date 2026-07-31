@@ -1,6 +1,7 @@
 import { fetchItem, type Property, type SpatialUnit } from 'ochre-sdk';
 import { bearingDegrees, compassPoint, haversineKm, UGARIT } from '$lib/geo';
 import { FACET_LABELS, type Catalogue, type CatalogueEntry, type Facet } from '$lib/catalogue';
+import { withRetries } from './retry';
 
 /** "Objects discovered outside the kingdom of Ugarit", in the RSTI project. */
 export const SET_UUID = '240e6e06-9d05-4210-aa83-f4190639886d';
@@ -10,8 +11,8 @@ type Fetch = typeof globalThis.fetch;
 /**
  * The set endpoint returns a thin projection: no images, descriptions, or
  * context paths. Those only exist on the individual item records, so the
- * catalogue is assembled from 11 parallel item reads and memoised — the page
- * itself is served from ISR, so this runs on revalidation, not per request.
+ * catalogue is assembled from 11 parallel item reads and memoised — the pages
+ * are prerendered, so this runs at build time, not per request.
  */
 const CACHE_TTL_MS = 10 * 60 * 1000;
 
@@ -22,7 +23,7 @@ export async function loadCatalogue(fetch: Fetch): Promise<Catalogue> {
 		return cache.value;
 	}
 
-	const catalogue = await buildCatalogue(fetch);
+	const catalogue = await buildCatalogue(withRetries(fetch));
 	cache = { value: catalogue, expires: Date.now() + CACHE_TTL_MS };
 	return catalogue;
 }

@@ -9,6 +9,7 @@
 		"build": "vite build",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
+		"test": "node --test --experimental-strip-types \"src/**/*.test.ts\"",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
 	},
@@ -23,6 +24,7 @@
 		"@sveltejs/vite-plugin-svelte": "^6.2.4",
 		"@tailwindcss/vite": "^4.1.18",
 		"@types/geojson": "^7946.0.16",
+		"@types/node": "^26.1.2",
 		"clsx": "^2.1.1",
 		"svelte": "^5.51.0",
 		"svelte-check": "^4.4.2",
