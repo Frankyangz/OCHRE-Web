@@ -209,14 +209,13 @@
 					style="--reveal-delay: {compact ? 0 : revealDelay(entry)}ms"
 				>
 					<!--
-						A cuneiform wedge: the impression a triangular stylus leaves in
-						clay, which is the unit every Ugaritic sign is built from. Drawn
-						as two facets so it reads as pressed into the surface rather than
-						drawn on it. The tail's point marks the findspot.
+						Traced from ʾgamla (U+10382), a real letter of the Ugaritic
+						alphabet: one vertical stylus stroke, slanted at the head and
+						blunt at the foot. Its ~1:5 taper is what keeps it from reading
+						as a map pin. The foot marks the findspot.
 					-->
-					<svg class="find-wedge" viewBox="0 0 12 24" width="13" height="26" aria-hidden="true">
-						<path class="facet-lit" d="M0.5 0 H6 V24 Q5.2 8 0.5 0 Z" />
-						<path class="facet-shade" d="M6 0 H11.5 Q6.8 8 6 24 Z" />
+					<svg class="find-wedge" viewBox="0 0 10 44" width="7" height="31" aria-hidden="true">
+						<path d="M1.6 3.2 L9 0 Q7.4 20 5.6 44 L4.4 44 Q2.6 18 1.6 3.2 Z" />
 					</svg>
 					<span class="sr-only">
 						{entry.label} — {entry.findspot ?? 'unlocated'}
@@ -339,31 +338,21 @@
 		filter: drop-shadow(0 1px 2px oklch(0.12 0.02 250 / 0.7));
 	}
 
-	/* Two facets, lit from the left, the way a stylus impression catches
-	   raking light across a tablet. */
-	.facet-lit {
-		fill: oklch(0.74 0.13 268);
-		transition: fill 160ms ease;
-	}
-
-	.facet-shade {
-		fill: oklch(0.54 0.16 268);
+	/* The letter is solid in every hand that wrote it; a two-tone version would
+	   be an invention, and at this size it would only turn to mush. */
+	.find-wedge path {
+		fill: oklch(0.66 0.16 268);
 		transition: fill 160ms ease;
 	}
 
 	.find:hover .find-wedge,
 	.find.is-active .find-wedge {
-		transform: scale(1.28);
+		transform: scale(1.22);
 	}
 
-	.find:hover .facet-lit,
-	.find.is-active .facet-lit {
-		fill: oklch(0.92 0.1 90);
-	}
-
-	.find:hover .facet-shade,
-	.find.is-active .facet-shade {
-		fill: oklch(0.68 0.15 70);
+	.find:hover .find-wedge path,
+	.find.is-active .find-wedge path {
+		fill: oklch(0.85 0.13 78);
 	}
 
 	@keyframes rise {

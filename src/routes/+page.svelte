@@ -396,8 +396,8 @@
 	}
 
 	.chip-wedge {
-		width: 7px;
-		height: 11px;
+		width: 5px;
+		height: 15px;
 		background: var(--lapis);
 	}
 
@@ -430,9 +430,9 @@
 
 	.row-wedge {
 		flex-shrink: 0;
-		width: 8px;
-		height: 13px;
-		translate: 0 2px;
+		width: 5px;
+		height: 16px;
+		translate: 0 3px;
 		background: var(--rule-strong);
 		transition: background 130ms ease;
 	}
