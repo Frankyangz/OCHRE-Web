@@ -32,8 +32,5 @@ FranklinZ_OCHRE.zip
 poetry-hw/
 Svelte/
 
-# Root level duplicates (Keep these out of the ochre-app repo)
-index.html
-style.css
+# This project uses pnpm; an npm lockfile alongside it only causes drift.
 package-lock.json
-package.json

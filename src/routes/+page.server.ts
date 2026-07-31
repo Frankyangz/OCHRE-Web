@@ -1,12 +1,20 @@
-import { fetchItem } from 'ochre-sdk';
+import { loadCatalogue } from '$lib/server/ochre';
+import type { PageServerLoad } from './$types';
 
-export async function load() {
-    const { error, item: set } = await fetchItem(
-        '240e6e06-9d05-4210-aa83-f4190639886d',
-        'set',
-    );
-    if (error !== null) {
-        throw new Error('Response failed!');
-    }
-    return set;
-}
+/**
+ * Upstream OCHRE data changes on the order of months, so serve from cache and
+ * revalidate hourly in the background.
+ */
+export const config = {
+	isr: { expiration: 3600 }
+};
+
+export const load: PageServerLoad = async ({ fetch, setHeaders }) => {
+	const catalogue = await loadCatalogue(fetch);
+
+	setHeaders({
+		'cache-control': 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400'
+	});
+
+	return { catalogue };
+};

@@ -1,12 +1,12 @@
-import adapter from '@sveltejs/adapter-auto';
+import adapter from '@sveltejs/adapter-vercel';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
 	kit: {
-		// adapter-auto only supports some environments, see https://svelte.dev/docs/kit/adapter-auto for a list.
-		// If your environment is not supported, or you settled on a specific environment, switch out the adapter.
-		// See https://svelte.dev/docs/kit/adapters for more information about adapters.
-		adapter: adapter()
+		// The catalogue is assembled from a dozen upstream OCHRE reads, so pages
+		// are served from the edge cache and revalidated in the background rather
+		// than rebuilt per request. Per-route ISR is set in each `+page.server.ts`.
+		adapter: adapter({ runtime: 'nodejs22.x' })
 	}
 };
 

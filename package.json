@@ -12,11 +12,16 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
 	},
 	"devDependencies": {
+		"@fontsource-variable/fraunces": "^5.3.0",
+		"@fontsource-variable/instrument-sans": "^5.3.0",
+		"@fontsource-variable/jetbrains-mono": "^5.3.0",
 		"@lucide/svelte": "^0.576.0",
 		"@sveltejs/adapter-auto": "^7.0.0",
+		"@sveltejs/adapter-vercel": "^6.3.4",
 		"@sveltejs/kit": "^2.50.2",
 		"@sveltejs/vite-plugin-svelte": "^6.2.4",
 		"@tailwindcss/vite": "^4.1.18",
+		"@types/geojson": "^7946.0.16",
 		"clsx": "^2.1.1",
 		"svelte": "^5.51.0",
 		"svelte-check": "^4.4.2",
