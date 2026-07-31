@@ -2,6 +2,7 @@
 	import './layout.css';
 	import 'maplibre-gl/dist/maplibre-gl.css';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
+	import { AUTHOR } from '$lib/site';
 
 	let { children } = $props();
 </script>
@@ -44,20 +45,23 @@
 		<div
 			class="mx-auto flex max-w-[92rem] flex-col gap-4 px-5 py-8 sm:flex-row sm:items-baseline sm:justify-between sm:px-8"
 		>
-			<p class="prose-note max-w-md text-[0.8rem]!">
-				Data from <a href="https://ochre.lib.uchicago.edu/" class="underlined" rel="noreferrer"
-					>OCHRE</a
-				>, the Online Cultural and Historical Research Environment at the University of Chicago,
-				read live through the
+			<div class="max-w-md">
+				<p class="prose-note text-[0.8rem]!">
+					Built by <a href="/colophon" class="underlined">{AUTHOR.name}</a>. Data from
+					<a href="https://ochre.lib.uchicago.edu/" class="underlined" rel="noreferrer">OCHRE</a>,
+					the Online Cultural and Historical Research Environment at the University of Chicago,
+					read through the
+					<a
+						href="https://github.com/uchicago-digitalculture-webdev/ochre-sdk"
+						class="underlined"
+						rel="noreferrer">ochre-sdk</a
+					>.
+				</p>
+			</div>
+			<p class="label flex gap-5">
+				<a href="/colophon" class="transition-colors hover:text-lapis!">Colophon</a>
 				<a
-					href="https://github.com/uchicago-digitalculture-webdev/ochre-sdk"
-					class="underlined"
-					rel="noreferrer">ochre-sdk</a
-				>.
-			</p>
-			<p class="label">
-				<a
-					href="https://github.com/Frankyangz/OCHRE-Web"
+					href={AUTHOR.repository}
 					class="transition-colors hover:text-lapis!"
 					rel="noreferrer"
 					target="_blank">Source ↗</a

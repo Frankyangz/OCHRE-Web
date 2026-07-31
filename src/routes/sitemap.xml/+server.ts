@@ -9,6 +9,7 @@ export async function GET({ fetch }) {
 
 	const urls = [
 		{ loc: SITE_URL, priority: '1.0' },
+		{ loc: `${SITE_URL}/colophon`, priority: '0.5' },
 		...catalogue.entries.map((entry) => ({
 			loc: `${SITE_URL}/${entry.uuid}`,
 			priority: '0.7'

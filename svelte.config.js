@@ -3,9 +3,10 @@ import adapter from '@sveltejs/adapter-vercel';
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
 	kit: {
-		// The catalogue is assembled from a dozen upstream OCHRE reads, so pages
-		// are served from the edge cache and revalidated in the background rather
-		// than rebuilt per request. Per-route ISR is set in each `+page.server.ts`.
+		// Every page is prerendered at build time — see `prerender = true` in each
+		// route — so the dozen upstream OCHRE reads happen once in CI and visitors
+		// are served static files. A catchall function is still emitted, which is
+		// what lets an unknown identifier reach the custom 404.
 		adapter: adapter({ runtime: 'nodejs22.x' })
 	}
 };

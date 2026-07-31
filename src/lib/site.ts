@@ -14,3 +14,10 @@ export const SITE_URL = (env.PUBLIC_SITE_URL || 'https://ochre-web.vercel.app').
 	/\/$/,
 	''
 );
+
+/** Shown in the footer credit and on the colophon. */
+export const AUTHOR = {
+	name: 'Franklin Zhang',
+	github: 'https://github.com/Frankyangz',
+	repository: 'https://github.com/Frankyangz/OCHRE-Web'
+} as const;

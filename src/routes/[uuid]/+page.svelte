@@ -8,13 +8,25 @@
 
 	const entry = $derived(data.entry);
 
-	// Archive photographs occasionally disappear upstream; drop the figure
-	// rather than leaving a broken image in the aside.
-	let imageFailed = $state(false);
+	// Archive images occasionally disappear upstream; drop the figure rather
+	// than leaving a broken image in the aside.
+	let failedImages = $state(new Set<string>());
 	$effect(() => {
 		entry.uuid;
-		imageFailed = false;
+		failedImages = new Set();
 	});
+
+	/** Observers date notes to the day, so print the day. */
+	function longDate(value: string): string {
+		const date = new Date(value);
+		if (Number.isNaN(date.getTime())) return value;
+		return date.toLocaleDateString('en-GB', {
+			day: 'numeric',
+			month: 'long',
+			year: 'numeric',
+			timeZone: 'UTC'
+		});
+	}
 
 	/** Only groups with something in them are rendered. */
 	const groups = $derived(
@@ -141,6 +153,74 @@
 			</section>
 		{/if}
 
+		<!--
+			Notes are the one place on this page where a person is speaking rather
+			than a database, so they are set in the reading face at reading size —
+			deliberately unlike the mono apparatus around them.
+		-->
+		{#if entry.notes.length}
+			<section>
+				<h2 class="label mb-3 border-b border-rule pb-2">
+					Notes on the record
+				</h2>
+				<div class="flex flex-col gap-6">
+					{#each entry.notes as note, index (index)}
+						<article class="note">
+							{#if note.title}
+								<h3 class="note-title">{note.title}</h3>
+							{/if}
+							{#each note.paragraphs as paragraph, p (p)}
+								<p class="note-body">
+									{#each paragraph as segment, s (s)}
+										{#if segment.kind === 'link'}
+											<a href={segment.value} rel="noreferrer" target="_blank" class="note-link">
+												{segment.value}
+											</a>
+										{:else}{segment.value}{/if}
+									{/each}
+								</p>
+							{/each}
+							{#if note.author || note.date}
+								<p class="note-by">
+									{#if note.author}<span class="note-author">{note.author}</span>{/if}
+									{#if note.author && note.date}<span aria-hidden="true"> · </span>{/if}
+									{#if note.date}<time datetime={note.date}>{longDate(note.date)}</time>{/if}
+								</p>
+							{/if}
+						</article>
+					{/each}
+				</div>
+			</section>
+		{/if}
+
+		{#if entry.citations.length}
+			<section>
+				<h2 class="label mb-3 border-b border-rule pb-2">Bibliography</h2>
+				<div class="flex flex-col gap-3">
+					{#each entry.citations as citation, index (index)}
+						<!-- Sanitised at build time by $lib/server/sanitize -->
+						<div class="citation">{@html citation.long}</div>
+					{/each}
+				</div>
+			</section>
+		{/if}
+
+		{#if entry.events.length}
+			<section>
+				<h2 class="label mb-3 border-b border-rule pb-2">Record history</h2>
+				<ol class="flex flex-col">
+					{#each entry.events as event, index (index)}
+						<li class="row">
+							<span class="row-key">
+								{#if event.date}<time datetime={event.date}>{longDate(event.date)}</time>{:else}—{/if}
+							</span>
+							<span class="row-value">{event.label}</span>
+						</li>
+					{/each}
+				</ol>
+			</section>
+		{/if}
+
 		{#if entry.persistentUrl}
 			<section>
 				<h2 class="label mb-3 border-b border-rule pb-2">Cite this record</h2>
@@ -161,19 +241,26 @@
 
 	<!-- Aside ---------------------------------------------------------------- -->
 	<aside class="flex flex-col gap-8 lg:sticky lg:top-20 lg:self-start">
-		{#if entry.imageUrl && !imageFailed}
-			<figure>
-				<img
-					src={entry.imageUrl}
-					alt="{entry.label}, photographed for the {data.projectLabel ?? 'OCHRE'} archive"
-					class="w-full rounded-sm border border-rule bg-surface"
-					loading="lazy"
-					decoding="async"
-					onerror={() => (imageFailed = true)}
-				/>
-				<figcaption class="label mt-2">Archive photograph · OCHRE</figcaption>
-			</figure>
-		{/if}
+		{#each entry.images as image (image.url)}
+			{#if !failedImages.has(image.url)}
+				<figure>
+					<img
+						src={image.url}
+						alt="{image.kind === 'hand copy'
+							? 'Scribal hand copy of the inscription on'
+							: 'Archive photograph of'} {entry.label}"
+						class="w-full rounded-sm border border-rule bg-surface"
+						loading="lazy"
+						decoding="async"
+						onerror={() => (failedImages = new Set([...failedImages, image.url]))}
+					/>
+					<figcaption class="label mt-2">
+						{image.kind === 'hand copy' ? 'Hand copy of the inscription' : 'Archive photograph'} ·
+						OCHRE
+					</figcaption>
+				</figure>
+			{/if}
+		{/each}
 
 		{#if entry.lat !== null && entry.lng !== null}
 			<figure>
@@ -227,6 +314,74 @@
 	/* The last crumb is where you are, so it stops being a muted label. */
 	.trail-here {
 		color: var(--ink);
+	}
+
+	/* Notes ----------------------------------------------------------------
+	   A note is a person writing. It gets an indent rule and reading-size
+	   prose so it reads as a voice interrupting the catalogue, not another
+	   metadata row. */
+	.note {
+		border-left: 2px solid var(--rule-strong);
+		padding-left: 1.1rem;
+	}
+
+	.note-title {
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.06em;
+		color: var(--ink-muted);
+		margin-bottom: 0.4rem;
+	}
+
+	.note-body {
+		font-size: 0.95rem;
+		line-height: 1.65;
+		text-wrap: pretty;
+	}
+
+	.note-body + .note-body {
+		margin-top: 0.7rem;
+	}
+
+	.note-link {
+		color: var(--lapis);
+		text-decoration: underline;
+		text-underline-offset: 3px;
+		word-break: break-all;
+	}
+
+	.note-by {
+		margin-top: 0.6rem;
+		font-family: var(--font-mono);
+		font-size: 0.7rem;
+		letter-spacing: 0.05em;
+		color: var(--ink-muted);
+	}
+
+	.note-author {
+		color: var(--ink);
+	}
+
+	/* Bibliography ---------------------------------------------------------
+	   The markup here comes from OCHRE's CSL output, so the styling has to be
+	   applied to whatever tags survived sanitising. */
+	.citation {
+		font-size: 0.88rem;
+		line-height: 1.6;
+		text-indent: -1em;
+		padding-left: 1em;
+		text-wrap: pretty;
+	}
+
+	.citation :global(i) {
+		font-style: italic;
+	}
+
+	.citation :global(a) {
+		color: var(--lapis);
+		text-decoration: underline;
+		text-underline-offset: 3px;
+		word-break: break-word;
 	}
 
 	.row {

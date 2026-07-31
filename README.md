@@ -34,7 +34,7 @@ as the only geography on screen.
 | Styling      | Tailwind CSS 4 over a custom token layer          |
 | Map          | MapLibre GL via `svelte-maplibre`, CARTO basemap  |
 | Data         | `ochre-sdk` against the public OCHRE API          |
-| Hosting      | Vercel, Node 22, ISR                              |
+| Hosting      | Vercel, Node 22, prerendered at build             |
 | Type safety  | `svelte-check` clean, no `@ts-nocheck`            |
 
 ## Notes on the implementation
@@ -49,10 +49,16 @@ superset, so `toEntry()` merges both. Reading only one of them silently loses
 either the map or half the metadata.
 
 **The catalogue costs a dozen upstream requests.** It is assembled from one set
-read plus eleven parallel item reads (~3 s cold), then memoised in-process and
-served from Vercel ISR with hourly revalidation, so a visitor pays for none of
-it. A single item failing upstream degrades that one row rather than taking down
-the page.
+read plus eleven parallel item reads (~3 s), then memoised in-process. Every page
+is prerendered, so that cost is paid once in CI and visitors are served static
+files. A single item failing upstream degrades that one row rather than taking
+down the page, and the fetch layer retries transient errors so one dropped
+connection cannot fail a build.
+
+**The interesting content is on the observations, not the objects.** Four of the
+eleven records carry notes written by named scholars, and one carries a Zotero
+bibliography — all hanging off `observations[].notes` and `bibliographies`, which
+an earlier version of this site was quietly discarding.
 
 **`filterLayers` in `svelte-maplibre` runs on every `styledata` event** and hides
 _any_ layer its predicate rejects — including layers added by child components.
@@ -79,6 +85,7 @@ the UI as a marker on the value rather than being flattened away.
 ```bash
 pnpm install
 pnpm dev        # http://localhost:5173
+pnpm test       # node:test (retry + sanitiser)
 pnpm check      # svelte-check
 pnpm build      # production build
 ```

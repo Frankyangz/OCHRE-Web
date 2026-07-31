@@ -11,14 +11,43 @@ export const FACET_LABELS = ['Object type', 'Material', 'Script', 'Language'] as
 
 export type FacetLabel = (typeof FACET_LABELS)[number];
 
-/** Columns shown in the catalogue table, in order. */
-export const TABLE_COLUMNS = [
-	'Object type',
-	'Material',
-	'Script',
-	'Language',
-	'Museum Number'
-] as const;
+/**
+ * A note's body, resolved server-side into paragraphs of plain segments.
+ *
+ * Note content arrives as text with newlines and bare URLs. Turning it into
+ * segments here means the component renders it with ordinary Svelte markup —
+ * no `{@html}`, so there is no injection surface at all.
+ */
+export type NoteSegment = { kind: 'text' | 'link'; value: string };
+
+/** A remark left on the record by a named scholar. */
+export type Note = {
+	title: string | null;
+	/** ISO date, where the observer recorded one. */
+	date: string | null;
+	author: string | null;
+	paragraphs: NoteSegment[][];
+};
+
+/** A bibliography entry. Both fields are already sanitised HTML. */
+export type Citation = {
+	short: string;
+	long: string;
+	zoteroId: string | null;
+};
+
+/** An excavation or curation event — "Photographed", "Analyzed". */
+export type ProvenanceEvent = {
+	date: string | null;
+	label: string;
+};
+
+export type ObjectImage = {
+	url: string;
+	label: string | null;
+	/** A photograph of the object, or a scribal hand copy of its inscription. */
+	kind: 'photograph' | 'hand copy';
+};
 
 export type CatalogueEntry = {
 	uuid: string;
@@ -40,6 +69,12 @@ export type CatalogueEntry = {
 	fields: Record<string, string>;
 	/** Labels whose value the excavator recorded as uncertain. */
 	uncertain: string[];
+	/** Remarks left by named scholars on the record. */
+	notes: Note[];
+	citations: Citation[];
+	events: ProvenanceEvent[];
+	/** Photographs and hand copies; the first is the lead image. */
+	images: ObjectImage[];
 };
 
 export type Facet = {
@@ -94,6 +129,17 @@ export const SORT_OPTIONS: Array<{ key: SortKey; label: string }> = [
 
 /** Missing values print as an em dash rather than an empty cell. */
 export const EMPTY = '—';
+
+const NUMBER_WORDS = [
+	'zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
+	'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen',
+	'nineteen', 'twenty'
+];
+
+/** Small numbers are spelled out in prose and left as digits in tables. */
+export function spellOut(value: number): string {
+	return NUMBER_WORDS[value] ?? value.toLocaleString('en-US');
+}
 
 export function displayField(entry: CatalogueEntry, label: string): string {
 	return entry.fields[label] || EMPTY;

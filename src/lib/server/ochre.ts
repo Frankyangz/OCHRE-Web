@@ -1,7 +1,18 @@
 import { fetchItem, type Property, type SpatialUnit } from 'ochre-sdk';
 import { bearingDegrees, compassPoint, haversineKm, UGARIT } from '$lib/geo';
-import { FACET_LABELS, type Catalogue, type CatalogueEntry, type Facet } from '$lib/catalogue';
+import {
+	FACET_LABELS,
+	type Catalogue,
+	type CatalogueEntry,
+	type Citation,
+	type Facet,
+	type Note,
+	type NoteSegment,
+	type ObjectImage,
+	type ProvenanceEvent
+} from '$lib/catalogue';
 import { withRetries } from './retry';
+import { sanitizeHtml, toPlainText } from './sanitize';
 
 /** "Objects discovered outside the kingdom of Ugarit", in the RSTI project. */
 export const SET_UUID = '240e6e06-9d05-4210-aa83-f4190639886d';
@@ -65,19 +76,118 @@ async function buildCatalogue(fetch: Fetch): Promise<Catalogue> {
 /**
  * The SDK still emits image links against `/ochre/v2/ochre.php`, which now
  * 404s; the live endpoint is `/ochre` and needs the `preview` flag to return a
- * JPEG rather than the item's XML. Rebuild from the uuid so the fix survives
- * whatever else changes in the path.
+ * JPEG rather than the item's XML.
  */
+export function imageUrlFor(uuid: string): string {
+	return `https://ochre.lib.uchicago.edu/ochre?uuid=${uuid}&preview`;
+}
+
+/** Rebuilds an SDK image link from its uuid so the fix survives path changes. */
 export function normaliseImageUrl(url: string | null | undefined): string | null {
 	if (!url) return null;
 
 	try {
 		const uuid = new URL(url).searchParams.get('uuid');
-		if (!uuid) return url;
-		return `https://ochre.lib.uchicago.edu/ochre?uuid=${uuid}&preview`;
+		return uuid ? imageUrlFor(uuid) : url;
 	} catch {
 		return url;
 	}
+}
+
+const URL_PATTERN = /(https?:\/\/[^\s<>()[\]]+[^\s<>()[\].,;:!?'"])/g;
+
+/**
+ * Splits note prose into paragraphs of plain segments.
+ *
+ * Observers type these by hand, so the content arrives with `\r\n`, ragged
+ * blank lines, and bare URLs. Resolving it to segments here lets the component
+ * render prose and links without ever touching `{@html}`.
+ */
+export function toParagraphs(content: string): NoteSegment[][] {
+	return content
+		.replace(/\r\n/g, '\n')
+		.split(/\n{2,}/)
+		.map((paragraph) => paragraph.replace(/\n/g, ' ').trim())
+		.filter(Boolean)
+		.map((paragraph) =>
+			paragraph
+				.split(URL_PATTERN)
+				.filter(Boolean)
+				// `split` with a capturing group hands back the URLs as their own
+				// entries, so a stateless prefix check is enough — and `.test()` on
+				// a /g regex would carry `lastIndex` between calls.
+				.map((value) => ({
+					kind: /^https?:\/\//.test(value) ? ('link' as const) : ('text' as const),
+					value
+				}))
+		)
+		.filter((segments) => segments.length > 0);
+}
+
+/** Notes hang off observations, not off the unit itself. */
+function toNotes(unit: SpatialUnit | null): Note[] {
+	if (!unit) return [];
+
+	return unit.observations
+		.flatMap((observation) => observation.notes ?? [])
+		.map((note) => ({
+			title: note.title || null,
+			date: note.date || null,
+			author: note.authors?.[0]?.identification?.label ?? null,
+			paragraphs: toParagraphs(String(note.content ?? ''))
+		}))
+		.filter((note) => note.paragraphs.length > 0);
+}
+
+/** Zotero records, arriving as CSL-formatted HTML that has to be sanitised. */
+function toCitations(unit: SpatialUnit | null): Citation[] {
+	if (!unit) return [];
+
+	return unit.bibliographies
+		.map((bibliography) => ({
+			short: toPlainText(bibliography.citation?.short),
+			long: sanitizeHtml(bibliography.citation?.long),
+			zoteroId: bibliography.zoteroId || null
+		}))
+		.filter((citation) => citation.long || citation.short);
+}
+
+function toEvents(unit: SpatialUnit | null): ProvenanceEvent[] {
+	if (!unit) return [];
+
+	return unit.events
+		.filter((event) => event.label)
+		.map((event) => ({ date: event.dateTime || null, label: event.label }));
+}
+
+/**
+ * An object can carry both a photograph and a scribal hand copy of its
+ * inscription; the second only appears on the observation's links, which is why
+ * the site showed one image per object before.
+ */
+function toImages(unit: SpatialUnit | null, summary: SpatialUnit): ObjectImage[] {
+	const images: ObjectImage[] = [];
+	const seen = new Set<string>();
+
+	const add = (url: string | null, label: string | null) => {
+		if (!url || seen.has(url)) return;
+		seen.add(url);
+		images.push({
+			url,
+			label,
+			kind: /hand\s*copy/i.test(label ?? '') ? 'hand copy' : 'photograph'
+		});
+	};
+
+	const lead = unit?.image ?? summary.image;
+	add(normaliseImageUrl(lead?.url), lead?.identification?.label || null);
+
+	for (const link of unit?.observations.flatMap((observation) => observation.links ?? []) ?? []) {
+		if (!link.uuid || !link.fileFormat?.startsWith('image/')) continue;
+		add(imageUrlFor(link.uuid), link.identification?.label || null);
+	}
+
+	return images;
 }
 
 /** Fetches one spatial unit, returning `null` instead of throwing. */
@@ -131,12 +241,13 @@ export function toEntry(summary: SpatialUnit, detail: SpatialUnit | null): Catal
 	const position = point ? { lat: point.latitude, lng: point.longitude } : null;
 	const bearing = position ? bearingDegrees(UGARIT, position) : null;
 	const displayPath = unit.context?.displayPath ?? summary.context?.displayPath ?? null;
+	const images = toImages(detail, summary);
 
 	return {
 		uuid: summary.uuid,
 		label: unit.identification.label || summary.identification.label,
 		description: unit.description || summary.description || null,
-		imageUrl: normaliseImageUrl(unit.image?.url ?? summary.image?.url),
+		imageUrl: images[0]?.url ?? null,
 		persistentUrl: unit.persistentUrl ?? summary.persistentUrl,
 		findspot: displayPath ? (displayPath.split('/').pop() ?? null) : null,
 		displayPath,
@@ -146,7 +257,11 @@ export function toEntry(summary: SpatialUnit, detail: SpatialUnit | null): Catal
 		bearing,
 		compass: bearing === null ? null : compassPoint(bearing),
 		fields,
-		uncertain
+		uncertain,
+		notes: toNotes(detail),
+		citations: toCitations(detail),
+		events: toEvents(detail),
+		images
 	};
 }
 

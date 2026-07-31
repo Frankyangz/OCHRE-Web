@@ -8,6 +8,7 @@
 		isUncertain,
 		searchHaystack,
 		sortEntries,
+	spellOut,
 		type CatalogueEntry,
 		type SortKey
 	} from '$lib/catalogue';
@@ -141,14 +142,12 @@
 
 		<div class="flex flex-col justify-end gap-6">
 			<p class="prose-note max-w-lg text-base!">
-				{#if range && nearest && furthest}
-					{catalogue.entries.length} objects inscribed in the Ugaritic alphabet, excavated
-					<em class="not-italic text-ink">beyond</em> the kingdom's borders — from
-					{nearest.findspot}, {formatDistance(range.nearest)} down the coast, to
-					{furthest.findspot}, {formatDistance(range.furthest)} west in Mycenaean Greece.
-				{:else}
-					{catalogue.entries.length} objects inscribed in the Ugaritic alphabet, excavated beyond
-					the kingdom's borders.
+				Scribes at Ugarit wrote with a thirty-sign cuneiform alphabet, among the earliest known.
+				This set collects what turned up elsewhere: {spellOut(entries.length)} inscribed objects,
+				<em class="not-italic text-ink">none of them found in the kingdom</em>.
+				{#if furthest && range}
+					The furthest is {formatDistance(range.furthest)} west — an ivory rod in a palace
+					workshop on the lower citadel at {furthest.findspot}.
 				{/if}
 			</p>
 
@@ -188,10 +187,43 @@
 	</p>
 </section>
 
+<!-- The outlier ----------------------------------------------------------- -->
+{#if furthest}
+	<!--
+		Eleven objects rendered identically say nothing about which of them
+		matters. This one is three times further out than anything else, so it
+		is the single place the grid is allowed to break.
+	-->
+	<section class="shell pt-20">
+		<a href="/{furthest.uuid}" class="feature">
+			{#if furthest.imageUrl}
+				<img
+					src={furthest.imageUrl}
+					alt="Archive photograph of {furthest.label}"
+					class="feature-image"
+					loading="lazy"
+					decoding="async"
+				/>
+			{/if}
+			<div class="feature-body">
+				<p class="label">The furthest find</p>
+				<p class="feature-distance">{formatDistance(furthest.distanceKm ?? 0)}</p>
+				<p class="feature-name">{furthest.label}</p>
+				{#if furthest.description}
+					<p class="prose-note max-w-md">{furthest.description}</p>
+				{/if}
+				<p class="label">
+					{furthest.findspot} · {furthest.compass} of Ugarit · read the record →
+				</p>
+			</div>
+		</a>
+	</section>
+{/if}
+
 <!-- Controls -------------------------------------------------------------- -->
 <section id="catalogue" class="shell scroll-mt-16 pt-16">
 	<div class="mb-6 flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
-		<h2 class="display-md">The catalogue</h2>
+		<h2 class="display-md">Outward from Ugarit</h2>
 
 		<div class="flex flex-wrap items-center gap-3">
 			<label class="relative">
@@ -302,7 +334,17 @@
 							<a href="/{entry.uuid}" class="row-link">
 								<span class="wedge row-wedge"></span>
 								<span>
-									<span class="row-name">{entry.label}</span>
+									<span class="row-name">
+										{entry.label}
+										<!-- Notes are the most interesting thing on an object page, so
+										     say from the index which records have one. -->
+										{#if entry.notes.length}
+											<span class="annotated">
+												{entry.notes.length}
+												{entry.notes.length === 1 ? 'note' : 'notes'}
+											</span>
+										{/if}
+									</span>
 									{#if entry.description}
 										<span class="row-desc">{entry.description}</span>
 									{/if}
@@ -463,6 +505,87 @@
 		font-size: 0.78rem;
 		line-height: 1.45;
 		color: var(--ink-muted);
+	}
+
+	/* Featured find --------------------------------------------------------- */
+	.feature {
+		display: grid;
+		gap: 2rem;
+		align-items: center;
+		padding: 1.75rem 0;
+		border-top: 1px solid var(--rule-strong);
+		border-bottom: 1px solid var(--rule-strong);
+		transition: background 160ms ease;
+	}
+
+	@media (min-width: 900px) {
+		.feature {
+			/* Deliberately lopsided: the image takes the larger share and the
+			   text hangs off it, so this block cannot be mistaken for a row. */
+			grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+			gap: 3.5rem;
+		}
+	}
+
+	.feature:hover {
+		background: var(--lapis-wash);
+	}
+
+	.feature-image {
+		width: 100%;
+		/* The excavation plate is tall; bound it so the block stays a band across
+		   the page rather than a full screen of its own. */
+		max-height: 24rem;
+		object-fit: contain;
+		object-position: left center;
+		border: 1px solid var(--rule);
+		background: white;
+	}
+
+	.feature-body {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.feature-distance {
+		font-family: var(--font-display);
+		font-variation-settings:
+			'SOFT' 0,
+			'WONK' 1,
+			'opsz' 144;
+		font-weight: 600;
+		font-size: clamp(2.6rem, 6vw, 4.25rem);
+		line-height: 0.95;
+		letter-spacing: -0.03em;
+		color: var(--lapis);
+	}
+
+	.feature-name {
+		font-size: 1.05rem;
+		font-weight: 500;
+	}
+
+	/* Row annotation -------------------------------------------------------- */
+	.annotated {
+		margin-left: 0.5rem;
+		padding: 0.05rem 0.35rem;
+		border: 1px solid var(--rule-strong);
+		border-radius: 2px;
+		font-family: var(--font-mono);
+		font-size: 0.6rem;
+		font-weight: 500;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--ink-muted);
+		white-space: nowrap;
+		vertical-align: 1px;
+	}
+
+	.row-on .annotated,
+	.row-link:hover .annotated {
+		border-color: var(--lapis);
+		color: var(--lapis);
 	}
 
 	.uncertain {
