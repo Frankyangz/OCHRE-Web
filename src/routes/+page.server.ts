@@ -2,19 +2,16 @@ import { loadCatalogue } from '$lib/server/ochre';
 import type { PageServerLoad } from './$types';
 
 /**
- * Upstream OCHRE data changes on the order of months, so serve from cache and
- * revalidate hourly in the background.
+ * Built once at deploy time rather than served from ISR.
+ *
+ * Twelve pages of archival data that changes on the order of months does not
+ * need per-request rendering, and ISR made the first visitor after every
+ * deployment wait out a dozen cold OCHRE round-trips. Prerendering moves that
+ * cost to the build, where only CI pays it.
  */
-export const config = {
-	isr: { expiration: 3600 }
-};
+export const prerender = true;
 
-export const load: PageServerLoad = async ({ fetch, setHeaders }) => {
+export const load: PageServerLoad = async ({ fetch }) => {
 	const catalogue = await loadCatalogue(fetch);
-
-	setHeaders({
-		'cache-control': 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400'
-	});
-
 	return { catalogue };
 };

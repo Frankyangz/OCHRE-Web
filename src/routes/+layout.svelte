@@ -6,7 +6,7 @@
 	let { children } = $props();
 </script>
 
-<a href="#catalogue" class="skip-link">Skip to the catalogue</a>
+<a href="#main" class="skip-link">Skip to content</a>
 
 <div class="flex min-h-screen flex-col">
 	<header
@@ -32,7 +32,9 @@
 		</div>
 	</header>
 
-	<main class="flex-1">
+	<!-- The skip link's target has to exist on every page, so it points at the
+	     main landmark rather than at any one page's section. -->
+	<main id="main" tabindex="-1" class="flex-1 focus:outline-none">
 		{@render children()}
 	</main>
 

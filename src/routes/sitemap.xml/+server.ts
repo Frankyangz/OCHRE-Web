@@ -1,11 +1,9 @@
 import { loadCatalogue } from '$lib/server/ochre';
 import { SITE_URL } from '$lib/site';
 
-export const config = {
-	isr: { expiration: 86400 }
-};
+export const prerender = true;
 
-export async function GET({ fetch, setHeaders }) {
+export async function GET({ fetch }) {
 	const catalogue = await loadCatalogue(fetch);
 	const lastmod = catalogue.fetchedAt.slice(0, 10);
 
@@ -28,10 +26,5 @@ ${urls
 </urlset>
 `;
 
-	setHeaders({
-		'content-type': 'application/xml',
-		'cache-control': 'public, max-age=0, s-maxage=86400'
-	});
-
-	return new Response(body);
+	return new Response(body, { headers: { 'content-type': 'application/xml' } });
 }
