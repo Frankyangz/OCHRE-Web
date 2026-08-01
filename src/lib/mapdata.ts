@@ -7,20 +7,12 @@
  * splitting is needed; a general-purpose version would have to handle it.
  */
 
-import type { FeatureCollection, LineString, Point } from 'geojson';
-import { UGARIT } from './geo';
+import type { FeatureCollection, LineString, Point as GeoJsonPoint } from 'geojson';
+import { angularDistance, EARTH_RADIUS_KM, toDegrees, toRadians, UGARIT, type Point } from './geo';
 import type { CatalogueEntry } from './catalogue';
 
-const EARTH_RADIUS_KM = 6371;
-const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
-const toDegrees = (radians: number) => (radians * 180) / Math.PI;
-
 /** Point at `distanceKm` from `origin` along `bearing` (degrees from north). */
-function destination(
-	origin: { lat: number; lng: number },
-	distanceKm: number,
-	bearing: number
-): [number, number] {
+function destination(origin: Point, distanceKm: number, bearing: number): [number, number] {
 	const angular = distanceKm / EARTH_RADIUS_KM;
 	const lat1 = toRadians(origin.lat);
 	const lng1 = toRadians(origin.lng);
@@ -64,7 +56,7 @@ export function distanceRings(steps = 180): FeatureCollection<LineString> {
 }
 
 /** One label anchor per ring, placed due west so it clears the finds. */
-export function ringLabels(): FeatureCollection<Point> {
+export function ringLabels(): FeatureCollection<GeoJsonPoint> {
 	return {
 		type: 'FeatureCollection',
 		features: RING_DISTANCES.map((km) => ({
@@ -76,24 +68,13 @@ export function ringLabels(): FeatureCollection<Point> {
 }
 
 /** Spherical interpolation, so the line follows the shortest path. */
-function greatCircle(
-	from: { lat: number; lng: number },
-	to: { lat: number; lng: number },
-	steps = 64
-): Array<[number, number]> {
+function greatCircle(from: Point, to: Point, steps = 64): Array<[number, number]> {
 	const lat1 = toRadians(from.lat);
 	const lng1 = toRadians(from.lng);
 	const lat2 = toRadians(to.lat);
 	const lng2 = toRadians(to.lng);
 
-	const d =
-		2 *
-		Math.asin(
-			Math.sqrt(
-				Math.sin((lat2 - lat1) / 2) ** 2 +
-					Math.cos(lat1) * Math.cos(lat2) * Math.sin((lng2 - lng1) / 2) ** 2
-			)
-		);
+	const d = angularDistance(from, to);
 
 	// Coincident points have no defined path.
 	if (d === 0) return [[from.lng, from.lat]];
@@ -107,10 +88,10 @@ function greatCircle(
 		const y = a * Math.cos(lat1) * Math.sin(lng1) + b * Math.cos(lat2) * Math.sin(lng2);
 		const z = a * Math.sin(lat1) + b * Math.sin(lat2);
 
-		return [
-			toDegrees(Math.atan2(y, x)),
-			toDegrees(Math.atan2(z, Math.sqrt(x * x + y * y)))
-		] as [number, number];
+		return [toDegrees(Math.atan2(y, x)), toDegrees(Math.atan2(z, Math.sqrt(x * x + y * y)))] as [
+			number,
+			number
+		];
 	});
 }
 

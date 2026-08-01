@@ -10,7 +10,7 @@
 
 <article class="shell pt-10 pb-4">
 	<nav aria-label="Breadcrumb" class="mb-8 flex flex-wrap items-center gap-x-2 gap-y-1">
-		<a href="/" class="label transition-colors hover:text-lapis!">Catalogue</a>
+		<a href="/" class="label hover:text-lapis! transition-colors">Catalogue</a>
 		<span class="label text-rule-strong!" aria-hidden="true">/</span>
 		<span class="label text-ink!">Colophon</span>
 	</nav>
@@ -19,9 +19,10 @@
 		<p class="label mb-4">Colophon</p>
 		<h1 class="display-md text-balance">Notes on building this</h1>
 		<p class="prose-note mt-5 text-base!">
-			I'm {AUTHOR.name}. I built this to see what it takes to make an archaeological data set
-			readable — not just queryable. The records come from OCHRE at the University of Chicago and
-			are read live; nothing here is transcribed or checked in. What follows is what I ran into.
+			I'm {AUTHOR.name}, and I go by Franklin. I built this to see what it takes to make an
+			archaeological data set readable — not just queryable. The records come from OCHRE at the
+			University of Chicago and are read live; nothing here is transcribed or checked in. What
+			follows is what I ran into.
 		</p>
 	</header>
 
@@ -47,14 +48,14 @@
 				<h2 class="display-sm mb-3">The notes were the point</h2>
 				<p class="prose">
 					The first version of this site rendered a table of property values and nothing else. But
-					four of these eleven records carry notes written by people — an accession number from
-					the Israel Museum, a remark signed by Miller C. Prosser in June 2014 pointing at other
-					tablets found at Tell Nebi Mend and never read.
+					four of these eleven records carry notes written by people — an accession number from the
+					Israel Museum, a remark signed by Miller C. Prosser in June 2014 pointing at other tablets
+					found at Tell Nebi Mend and never read.
 				</p>
 				<p class="prose">
-					That is the most interesting material in the data set and it was being thrown away
-					because it lives on <code>observations[].notes</code> rather than on the object. Object
-					pages now show it in reading type, with whoever wrote it and when.
+					That is the most interesting material in the data set and it was being thrown away because
+					it lives on <code>observations[].notes</code> rather than on the object. Object pages now show
+					it in reading type, with whoever wrote it and when.
 				</p>
 			</section>
 
@@ -62,15 +63,15 @@
 				<h2 class="display-sm mb-3">Modern borders are an anachronism here</h2>
 				<p class="prose">
 					The basemap is stripped to land, sea and rivers. Motorways and national boundaries are
-					noise on a map of the Late Bronze Age — worse than noise, they imply a political
-					geography that did not exist. What's left is the coastline, which is the thing that
-					actually shaped how these objects moved.
+					noise on a map of the Late Bronze Age — worse than noise, they imply a political geography
+					that did not exist. What's left is the coastline, which is the thing that actually shaped
+					how these objects moved.
 				</p>
 				<p class="prose">
-					Ugarit is drawn as an empty ring. The set is defined by exclusion — every object in it
-					was found somewhere that is not Ugarit — so distance from the capital is the default
-					sort and a column in its own right, and the one place with nothing to show is the centre
-					of the map.
+					Ugarit is drawn as an empty ring. The set is defined by exclusion — every object in it was
+					found somewhere that is not Ugarit — so distance from the capital is the default sort and
+					a column in its own right, and the one place with nothing to show is the centre of the
+					map.
 				</p>
 			</section>
 
@@ -78,10 +79,9 @@
 				<h2 class="display-sm mb-3">A filter that filters nothing is not a filter</h2>
 				<p class="prose">
 					Script is “Alphabetic” and Language is “Ugaritic” for almost every object here. Offering
-					those as filter chips would be offering controls that cannot change the result, so
-					they're stated once in the header as context instead. Only properties with more than one
-					distinct value become facets, and each chip shows how many results it would actually
-					leave.
+					those as filter chips would be offering controls that cannot change the result, so they're
+					stated once in the header as context instead. Only properties with more than one distinct
+					value become facets, and each chip shows how many results it would actually leave.
 				</p>
 				<p class="prose">
 					Where an excavator recorded an identification as uncertain, OCHRE flags it on the value.
@@ -93,11 +93,13 @@
 
 		<aside class="flex flex-col gap-10">
 			<section>
-				<h2 class="label mb-3 border-b border-rule pb-2">Type</h2>
+				<h2 class="label border-rule mb-3 border-b pb-2">Type</h2>
 				<dl class="flex flex-col">
 					<div class="row">
 						<dt class="row-key">Display</dt>
-						<dd class="row-value">Fraunces, with its wonk and soft axes set for incised terminals</dd>
+						<dd class="row-value">
+							Fraunces, with its wonk and soft axes set for incised terminals
+						</dd>
 					</div>
 					<div class="row">
 						<dt class="row-key">Text</dt>
@@ -111,18 +113,18 @@
 			</section>
 
 			<section>
-				<h2 class="label mb-3 border-b border-rule pb-2">The mark</h2>
+				<h2 class="label border-rule mb-3 border-b pb-2">The mark</h2>
 				<p class="prose-note">
 					The wedge used for the map markers, the filter bullets and the logo is
-					<i>gamla</i>, a letter of the Ugaritic alphabet — one impression of a triangular stylus
-					in clay. I drew it after rendering the Unicode block to look at the real letterforms;
-					the first two attempts were triangles pretending to be wedges, and the giveaway was the
+					<i>gamla</i>, a letter of the Ugaritic alphabet — one impression of a triangular stylus in
+					clay. I drew it after rendering the Unicode block to look at the real letterforms; the
+					first two attempts were triangles pretending to be wedges, and the giveaway was the
 					proportion. Real Ugaritic wedges are slivers, about one to five.
 				</p>
 			</section>
 
 			<section>
-				<h2 class="label mb-3 border-b border-rule pb-2">Built with</h2>
+				<h2 class="label border-rule mb-3 border-b pb-2">Built with</h2>
 				<dl class="flex flex-col">
 					<div class="row">
 						<dt class="row-key">Framework</dt>

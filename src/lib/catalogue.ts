@@ -131,9 +131,27 @@ export const SORT_OPTIONS: Array<{ key: SortKey; label: string }> = [
 export const EMPTY = '—';
 
 const NUMBER_WORDS = [
-	'zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
-	'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen',
-	'nineteen', 'twenty'
+	'zero',
+	'one',
+	'two',
+	'three',
+	'four',
+	'five',
+	'six',
+	'seven',
+	'eight',
+	'nine',
+	'ten',
+	'eleven',
+	'twelve',
+	'thirteen',
+	'fourteen',
+	'fifteen',
+	'sixteen',
+	'seventeen',
+	'eighteen',
+	'nineteen',
+	'twenty'
 ];
 
 /** Small numbers are spelled out in prose and left as digits in tables. */

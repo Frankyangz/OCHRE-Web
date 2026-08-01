@@ -191,10 +191,7 @@ function toImages(unit: SpatialUnit | null, summary: SpatialUnit): ObjectImage[]
 }
 
 /** Fetches one spatial unit, returning `null` instead of throwing. */
-export async function fetchSpatialUnit(
-	uuid: string,
-	fetch: Fetch
-): Promise<SpatialUnit | null> {
+export async function fetchSpatialUnit(uuid: string, fetch: Fetch): Promise<SpatialUnit | null> {
 	try {
 		const { error, item } = await fetchItem(uuid, 'spatialUnit', undefined, { fetch });
 		return error === null ? item : null;

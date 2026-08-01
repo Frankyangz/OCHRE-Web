@@ -3,7 +3,6 @@
 @import '@fontsource-variable/jetbrains-mono';
 
 @import 'tailwindcss';
-@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -33,16 +32,12 @@
 	--rule-strong: oklch(0.74 0.01 85);
 
 	--lapis: oklch(0.43 0.161 268);
-	--lapis-bright: oklch(0.52 0.19 268);
 	--lapis-wash: oklch(0.93 0.028 268);
-	--patina: oklch(0.52 0.062 176);
 	--ochre: oklch(0.58 0.114 71);
-	--ochre-wash: oklch(0.94 0.036 82);
 
 	/* The map keeps its own dark ground in both themes: it reads as an
 	   instrument set into the page, not as another panel. */
 	--abyss: oklch(0.19 0.017 250);
-	--abyss-deep: oklch(0.15 0.015 250);
 
 	color-scheme: light;
 }
@@ -57,40 +52,12 @@
 	--rule-strong: oklch(0.42 0.018 255);
 
 	--lapis: oklch(0.74 0.121 268);
-	--lapis-bright: oklch(0.8 0.135 268);
 	--lapis-wash: oklch(0.28 0.055 268);
-	--patina: oklch(0.72 0.078 176);
 	--ochre: oklch(0.78 0.111 71);
-	--ochre-wash: oklch(0.29 0.045 71);
 
 	--abyss: oklch(0.165 0.014 250);
-	--abyss-deep: oklch(0.13 0.012 250);
 
 	color-scheme: dark;
-}
-
-/* shadcn component tokens, re-pointed at the palette above so the vendored
-   Button/Input/Table inherit this identity instead of the default slate. */
-:root,
-.dark {
-	--background: var(--ground);
-	--foreground: var(--ink);
-	--card: var(--surface);
-	--card-foreground: var(--ink);
-	--popover: var(--raised);
-	--popover-foreground: var(--ink);
-	--primary: var(--lapis);
-	--primary-foreground: var(--raised);
-	--secondary: var(--surface);
-	--secondary-foreground: var(--ink);
-	--muted: var(--surface);
-	--muted-foreground: var(--ink-muted);
-	--accent: var(--lapis-wash);
-	--accent-foreground: var(--lapis);
-	--destructive: oklch(0.58 0.21 27);
-	--border: var(--rule);
-	--input: var(--rule-strong);
-	--ring: var(--lapis);
 }
 
 @theme inline {
@@ -111,37 +78,15 @@
 	--color-rule: var(--rule);
 	--color-rule-strong: var(--rule-strong);
 	--color-lapis: var(--lapis);
-	--color-lapis-bright: var(--lapis-bright);
 	--color-lapis-wash: var(--lapis-wash);
-	--color-patina: var(--patina);
 	--color-ochre: var(--ochre);
-	--color-ochre-wash: var(--ochre-wash);
 	--color-abyss: var(--abyss);
-	--color-abyss-deep: var(--abyss-deep);
-
-	--color-background: var(--background);
-	--color-foreground: var(--foreground);
-	--color-card: var(--card);
-	--color-card-foreground: var(--card-foreground);
-	--color-popover: var(--popover);
-	--color-popover-foreground: var(--popover-foreground);
-	--color-primary: var(--primary);
-	--color-primary-foreground: var(--primary-foreground);
-	--color-secondary: var(--secondary);
-	--color-secondary-foreground: var(--secondary-foreground);
-	--color-muted: var(--muted);
-	--color-muted-foreground: var(--muted-foreground);
-	--color-accent: var(--accent);
-	--color-accent-foreground: var(--accent-foreground);
-	--color-destructive: var(--destructive);
-	--color-border: var(--border);
-	--color-input: var(--input);
-	--color-ring: var(--ring);
 }
 
 @layer base {
+	/* Borders default to the hairline colour, so `border` alone is enough. */
 	* {
-		@apply border-border;
+		border-color: var(--rule);
 	}
 
 	html {
@@ -259,10 +204,15 @@
 		}
 	}
 
-	/* Hairline that reads as a measured rule on a plan, not as a border. */
-	.rule-h {
-		@apply bg-rule;
-		height: 1px;
+	/* The excavator's own hedge on a value, not the site's. Shared, because it
+	   appears on both the catalogue and the object pages. */
+	.uncertain {
+		margin-left: 0.12rem;
+		color: var(--ochre);
+		font-size: 0.7rem;
+		vertical-align: super;
+		text-decoration: none;
+		cursor: help;
 	}
 
 	/*

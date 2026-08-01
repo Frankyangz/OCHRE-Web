@@ -71,8 +71,6 @@ test('gives up after the attempt limit and surfaces the last error', async () =>
 
 test("hands back the server's own last response rather than a synthetic error", async () => {
 	const s = scripted([status(500), status(500), status(500), status(500)]);
-	const response = await withRetries(s.fetch, { ...options, attempts: 4 })(
-		'https://example.test'
-	);
+	const response = await withRetries(s.fetch, { ...options, attempts: 4 })('https://example.test');
 	assert.equal(response.status, 500);
 });

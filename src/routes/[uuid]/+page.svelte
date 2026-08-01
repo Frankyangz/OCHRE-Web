@@ -12,8 +12,9 @@
 	// than leaving a broken image in the aside.
 	let failedImages = $state(new Set<string>());
 	$effect(() => {
-		entry.uuid;
-		failedImages = new Set();
+		// Reading the uuid is what subscribes this effect to navigation between
+		// objects, so the set is cleared when a different record loads.
+		if (entry.uuid) failedImages = new Set();
 	});
 
 	/** Observers date notes to the day, so print the day. */
@@ -81,7 +82,7 @@
 <article class="shell pt-10 pb-4">
 	<!-- Trail ------------------------------------------------------------- -->
 	<nav aria-label="Breadcrumb" class="mb-8 flex flex-wrap items-center gap-x-2 gap-y-1">
-		<a href="/" class="label transition-colors hover:text-lapis!">Catalogue</a>
+		<a href="/" class="label hover:text-lapis! transition-colors">Catalogue</a>
 		{#each trail as segment, index (index)}
 			<span class="label text-rule-strong!" aria-hidden="true">/</span>
 			<span class="label" class:trail-here={index === trail.length - 1}>{segment}</span>
@@ -102,7 +103,7 @@
 		<!-- The distance is the fact this catalogue is built on, so it gets the
 		     largest type on the page after the object's own name. -->
 		<div class="flex flex-col justify-end">
-			<div class="flex items-baseline gap-4 border-b border-rule pb-3">
+			<div class="border-rule flex items-baseline gap-4 border-b pb-3">
 				<p class="display-md text-lapis!">
 					{entry.distanceKm !== null ? formatDistance(entry.distanceKm) : EMPTY}
 				</p>
@@ -122,15 +123,14 @@
 	<div class="flex flex-col gap-9">
 		{#each groups as group (group.heading)}
 			<section>
-				<h2 class="label mb-3 border-b border-rule pb-2">{group.heading}</h2>
+				<h2 class="label border-rule mb-3 border-b pb-2">{group.heading}</h2>
 				<dl class="flex flex-col">
 					{#each group.rows as row (row.label)}
 						<div class="row">
 							<dt class="row-key">{row.label}</dt>
 							<dd class="row-value">
-								{row.value}{#if row.uncertain}<abbr
-										class="uncertain"
-										title="Recorded as uncertain">?</abbr
+								{row.value}{#if row.uncertain}<abbr class="uncertain" title="Recorded as uncertain"
+										>?</abbr
 									>{/if}
 							</dd>
 						</div>
@@ -141,7 +141,7 @@
 
 		{#if ungrouped.length}
 			<section>
-				<h2 class="label mb-3 border-b border-rule pb-2">Other recorded fields</h2>
+				<h2 class="label border-rule mb-3 border-b pb-2">Other recorded fields</h2>
 				<dl class="flex flex-col">
 					{#each ungrouped as row (row.label)}
 						<div class="row">
@@ -160,9 +160,7 @@
 		-->
 		{#if entry.notes.length}
 			<section>
-				<h2 class="label mb-3 border-b border-rule pb-2">
-					Notes on the record
-				</h2>
+				<h2 class="label border-rule mb-3 border-b pb-2">Notes on the record</h2>
 				<div class="flex flex-col gap-6">
 					{#each entry.notes as note, index (index)}
 						<article class="note">
@@ -195,10 +193,17 @@
 
 		{#if entry.citations.length}
 			<section>
-				<h2 class="label mb-3 border-b border-rule pb-2">Bibliography</h2>
+				<h2 class="label border-rule mb-3 border-b pb-2">Bibliography</h2>
 				<div class="flex flex-col gap-3">
 					{#each entry.citations as citation, index (index)}
-						<!-- Sanitised at build time by $lib/server/sanitize -->
+						<!--
+							The only {@html} on the site. Bibliography entries are CSL markup
+							from OCHRE — italic titles, a DOI anchor — and flattening them to
+							text would lose real typography. The value goes through the
+							allowlist sanitiser in $lib/server/sanitize at build time, which
+							has tests covering script tags and javascript: hrefs.
+						-->
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 						<div class="citation">{@html citation.long}</div>
 					{/each}
 				</div>
@@ -207,12 +212,13 @@
 
 		{#if entry.events.length}
 			<section>
-				<h2 class="label mb-3 border-b border-rule pb-2">Record history</h2>
+				<h2 class="label border-rule mb-3 border-b pb-2">Record history</h2>
 				<ol class="flex flex-col">
 					{#each entry.events as event, index (index)}
 						<li class="row">
 							<span class="row-key">
-								{#if event.date}<time datetime={event.date}>{longDate(event.date)}</time>{:else}—{/if}
+								{#if event.date}<time datetime={event.date}>{longDate(event.date)}</time
+									>{:else}—{/if}
 							</span>
 							<span class="row-value">{event.label}</span>
 						</li>
@@ -223,7 +229,7 @@
 
 		{#if entry.persistentUrl}
 			<section>
-				<h2 class="label mb-3 border-b border-rule pb-2">Cite this record</h2>
+				<h2 class="label border-rule mb-3 border-b pb-2">Cite this record</h2>
 				<p class="prose-note text-[0.82rem]!">
 					{data.projectLabel ?? 'OCHRE'}, “{entry.label}”, in <em>{data.setTitle}</em>.
 				</p>
@@ -231,7 +237,7 @@
 					href={entry.persistentUrl}
 					rel="noreferrer"
 					target="_blank"
-					class="datum mt-2 inline-block break-all text-lapis! hover:underline"
+					class="datum text-lapis! mt-2 inline-block break-all hover:underline"
 				>
 					{entry.persistentUrl}
 				</a>
@@ -249,14 +255,13 @@
 						alt="{image.kind === 'hand copy'
 							? 'Scribal hand copy of the inscription on'
 							: 'Archive photograph of'} {entry.label}"
-						class="w-full rounded-sm border border-rule bg-surface"
+						class="border-rule bg-surface w-full rounded-sm border"
 						loading="lazy"
 						decoding="async"
 						onerror={() => (failedImages = new Set([...failedImages, image.url]))}
 					/>
 					<figcaption class="label mt-2">
-						{image.kind === 'hand copy' ? 'Hand copy of the inscription' : 'Archive photograph'} ·
-						OCHRE
+						{image.kind === 'hand copy' ? 'Hand copy of the inscription' : 'Archive photograph'} · OCHRE
 					</figcaption>
 				</figure>
 			{/if}
@@ -264,7 +269,7 @@
 
 		{#if entry.lat !== null && entry.lng !== null}
 			<figure>
-				<div class="h-64 overflow-hidden rounded-sm border border-rule-strong">
+				<div class="border-rule-strong h-64 overflow-hidden rounded-sm border">
 					<DispersalMap entries={[entry]} compact />
 				</div>
 				<figcaption class="label mt-2">
@@ -277,15 +282,13 @@
 
 <!-- Neighbours ------------------------------------------------------------- -->
 <nav class="shell mt-20" aria-label="Nearby finds">
-	<div class="grid gap-px border-t border-rule sm:grid-cols-2">
+	<div class="border-rule grid gap-px border-t sm:grid-cols-2">
 		{#if data.previous}
 			<a href="/{data.previous.uuid}" class="step">
 				<span class="label">← Closer to Ugarit</span>
 				<span class="step-name">{data.previous.label}</span>
 				<span class="datum text-ink-muted!">
-					{data.previous.distanceKm !== null
-						? formatDistance(data.previous.distanceKm)
-						: EMPTY}
+					{data.previous.distanceKm !== null ? formatDistance(data.previous.distanceKm) : EMPTY}
 				</span>
 			</a>
 		{:else}
@@ -408,15 +411,6 @@
 		font-size: 0.925rem;
 		line-height: 1.5;
 		text-wrap: pretty;
-	}
-
-	.uncertain {
-		margin-left: 0.15rem;
-		color: var(--ochre);
-		font-size: 0.7rem;
-		vertical-align: super;
-		text-decoration: none;
-		cursor: help;
 	}
 
 	.step {

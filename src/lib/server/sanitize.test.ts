@@ -16,7 +16,10 @@ test('drops attributes but keeps the element', () => {
 
 test('rebuilds http links with rel and target', () => {
 	const html = sanitizeHtml('<a href="https://doi.org/10.1000/xyz" class="x">DOI</a>');
-	assert.equal(html, '<a href="https://doi.org/10.1000/xyz" rel="noreferrer" target="_blank">DOI</a>');
+	assert.equal(
+		html,
+		'<a href="https://doi.org/10.1000/xyz" rel="noreferrer" target="_blank">DOI</a>'
+	);
 });
 
 test('strips a javascript: href but keeps the text, balanced', () => {
@@ -26,7 +29,12 @@ test('strips a javascript: href but keeps the text, balanced', () => {
 });
 
 test('strips other non-web schemes', () => {
-	for (const href of ['data:text/html,<b>x</b>', 'vbscript:x', 'file:///etc/passwd', '//evil.test']) {
+	for (const href of [
+		'data:text/html,<b>x</b>',
+		'vbscript:x',
+		'file:///etc/passwd',
+		'//evil.test'
+	]) {
 		const html = sanitizeHtml(`<a href="${href}">t</a>`);
 		assert.equal(html, '<a>t</a>', `should reject ${href}`);
 	}

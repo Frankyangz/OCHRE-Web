@@ -38,9 +38,7 @@ function safeHref(attributes: string): string | null {
 export function sanitizeHtml(input: string | null | undefined): string {
 	if (!input) return '';
 
-	const withoutDangerousElements = input
-		.replace(STRIPPED_ELEMENTS, '')
-		.replace(STRIPPED_TAGS, '');
+	const withoutDangerousElements = input.replace(STRIPPED_ELEMENTS, '').replace(STRIPPED_TAGS, '');
 
 	return withoutDangerousElements.replace(TAG, (_match, closing, rawName, attributes) => {
 		const name = String(rawName).toLowerCase();

@@ -14,25 +14,31 @@ export const UGARIT = {
 	lng: 35.78194
 } as const;
 
-const EARTH_RADIUS_KM = 6371;
+export const EARTH_RADIUS_KM = 6371;
 
-const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
-const toDegrees = (radians: number) => (radians * 180) / Math.PI;
+export type Point = { lat: number; lng: number };
 
-/** Great-circle distance in kilometres. */
-export function haversineKm(
-	from: { lat: number; lng: number },
-	to: { lat: number; lng: number }
-): number {
+export const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
+export const toDegrees = (radians: number) => (radians * 180) / Math.PI;
+
+/**
+ * Angular separation of two points in radians — the haversine formula without
+ * the radius applied. Distance and great-circle interpolation both need it.
+ */
+export function angularDistance(from: Point, to: Point): number {
 	const dLat = toRadians(to.lat - from.lat);
 	const dLng = toRadians(to.lng - from.lng);
 	const lat1 = toRadians(from.lat);
 	const lat2 = toRadians(to.lat);
 
-	const a =
-		Math.sin(dLat / 2) ** 2 + Math.sin(dLng / 2) ** 2 * Math.cos(lat1) * Math.cos(lat2);
+	const a = Math.sin(dLat / 2) ** 2 + Math.sin(dLng / 2) ** 2 * Math.cos(lat1) * Math.cos(lat2);
 
-	return 2 * EARTH_RADIUS_KM * Math.asin(Math.sqrt(a));
+	return 2 * Math.asin(Math.sqrt(a));
+}
+
+/** Great-circle distance in kilometres. */
+export function haversineKm(from: Point, to: Point): number {
+	return EARTH_RADIUS_KM * angularDistance(from, to);
 }
 
 /** Initial bearing in degrees clockwise from north (0–360). */

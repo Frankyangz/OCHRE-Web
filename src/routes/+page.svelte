@@ -8,7 +8,7 @@
 		isUncertain,
 		searchHaystack,
 		sortEntries,
-	spellOut,
+		spellOut,
 		type CatalogueEntry,
 		type SortKey
 	} from '$lib/catalogue';
@@ -57,35 +57,41 @@
 			: null;
 	});
 
-	const nearest = $derived(
-		range ? entries.find((e) => e.distanceKm === range.nearest) ?? null : null
-	);
 	const furthest = $derived(
-		range ? entries.find((e) => e.distanceKm === range.furthest) ?? null : null
+		range ? (entries.find((e) => e.distanceKm === range.furthest) ?? null) : null
 	);
 
 	/* --------------------------------------------------------------- filtering */
 
 	const needle = $derived(search.trim().toLowerCase());
 
-	const filtered = $derived.by(() => {
-		const matched = entries.filter((entry) => {
-			for (const [label, values] of Object.entries(activeFacets)) {
-				if (values.length && !values.includes(entry.fields[label] ?? '')) return false;
-			}
-			return needle === '' || searchHaystack(entry).includes(needle);
-		});
-		return sortEntries(matched, sortKey);
-	});
+	/**
+	 * Whether an entry survives the current filters.
+	 *
+	 * `ignore` lets the facet counts ask "how many would this chip leave?"
+	 * without the chip's own facet filtering the answer down to itself.
+	 */
+	function matches(entry: CatalogueEntry, ignore?: string): boolean {
+		for (const [label, values] of Object.entries(activeFacets)) {
+			if (label === ignore) continue;
+			if (values.length && !values.includes(entry.fields[label] ?? '')) return false;
+		}
+		return needle === '' || searchHaystack(entry).includes(needle);
+	}
+
+	const filtered = $derived(
+		sortEntries(
+			entries.filter((entry) => matches(entry)),
+			sortKey
+		)
+	);
 
 	const activeCount = $derived(Object.values(activeFacets).flat().length);
 	const isFiltered = $derived(activeCount > 0 || needle !== '');
 
 	function toggleFacet(label: string, value: string) {
 		const current = activeFacets[label] ?? [];
-		const next = current.includes(value)
-			? current.filter((v) => v !== value)
-			: [...current, value];
+		const next = current.includes(value) ? current.filter((v) => v !== value) : [...current, value];
 		activeFacets = { ...activeFacets, [label]: next };
 	}
 
@@ -100,23 +106,14 @@
 
 	/** How many results a facet value would leave, given the other filters. */
 	function facetYield(label: string, value: string): number {
-		return entries.filter((entry) => {
-			if (entry.fields[label] !== value) return false;
-			for (const [other, values] of Object.entries(activeFacets)) {
-				if (other === label) continue;
-				if (values.length && !values.includes(entry.fields[other] ?? '')) return false;
-			}
-			return needle === '' || searchHaystack(entry).includes(needle);
-		}).length;
+		return entries.filter((entry) => entry.fields[label] === value && matches(entry, label)).length;
 	}
 
 	/* ------------------------------------------------------------ map ↔ table */
 
 	function selectFromMap(uuid: string) {
 		selected = uuid;
-		document
-			.getElementById(`row-${uuid}`)
-			?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+		document.getElementById(`row-${uuid}`)?.scrollIntoView({ block: 'center', behavior: 'smooth' });
 	}
 
 	function describe(entry: CatalogueEntry): string {
@@ -144,14 +141,14 @@
 			<p class="prose-note max-w-lg text-base!">
 				Scribes at Ugarit wrote with a thirty-sign cuneiform alphabet, among the earliest known.
 				This set collects what turned up elsewhere: {spellOut(entries.length)} inscribed objects,
-				<em class="not-italic text-ink">none of them found in the kingdom</em>.
+				<em class="text-ink not-italic">none of them found in the kingdom</em>.
 				{#if furthest && range}
-					The furthest is {formatDistance(range.furthest)} west — an ivory rod in a palace
-					workshop on the lower citadel at {furthest.findspot}.
+					The furthest is {formatDistance(range.furthest)} west — an ivory rod in a palace workshop on
+					the lower citadel at {furthest.findspot}.
 				{/if}
 			</p>
 
-			<dl class="flex flex-wrap gap-x-10 gap-y-4 border-t border-rule pt-5">
+			<dl class="border-rule flex flex-wrap gap-x-10 gap-y-4 border-t pt-5">
 				<div>
 					<dt class="label mb-1">Finds</dt>
 					<dd class="datum text-lg!">{catalogue.entries.length}</dd>
@@ -176,7 +173,7 @@
 
 <!-- Map ------------------------------------------------------------------- -->
 <section class="shell">
-	<div class="overflow-hidden rounded-lg border border-rule-strong">
+	<div class="border-rule-strong overflow-hidden rounded-lg border">
 		<div class="h-[22rem] w-full sm:h-[clamp(26rem,58vh,40rem)]">
 			<DispersalMap {entries} bind:hovered bind:selected onselect={selectFromMap} />
 		</div>
@@ -232,10 +229,10 @@
 					type="search"
 					bind:value={search}
 					placeholder="Search names, findspots, publications…"
-					class="h-9 w-64 rounded-sm border border-rule bg-surface pr-3 pl-8 text-sm placeholder:text-ink-muted focus:border-lapis focus:outline-none"
+					class="border-rule bg-surface placeholder:text-ink-muted focus:border-lapis h-9 w-64 rounded-sm border pr-3 pl-8 text-sm focus:outline-none"
 				/>
 				<svg
-					class="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-ink-muted"
+					class="text-ink-muted pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2"
 					viewBox="0 0 24 24"
 					fill="none"
 					stroke="currentColor"
@@ -250,7 +247,7 @@
 				<span class="label">Sort</span>
 				<select
 					bind:value={sortKey}
-					class="h-9 rounded-sm border border-rule bg-surface px-2 text-sm focus:border-lapis focus:outline-none"
+					class="border-rule bg-surface focus:border-lapis h-9 rounded-sm border px-2 text-sm focus:outline-none"
 				>
 					{#each SORT_OPTIONS as option (option.key)}
 						<option value={option.key}>{option.label}</option>
@@ -261,7 +258,7 @@
 	</div>
 
 	<!-- Facets -->
-	<div class="mb-5 flex flex-col gap-3 border-y border-rule py-4">
+	<div class="border-rule mb-5 flex flex-col gap-3 border-y py-4">
 		{#each catalogue.facets as facet (facet.label)}
 			<div class="flex flex-wrap items-baseline gap-x-3 gap-y-2">
 				<span class="label w-24 shrink-0">{facet.label}</span>
@@ -285,7 +282,7 @@
 		{/each}
 
 		<div class="flex items-center gap-4">
-			<p class="label normal-case! tracking-normal!">
+			<p class="label tracking-normal! normal-case!">
 				Showing {filtered.length} of {entries.length}
 			</p>
 			{#if isFiltered}
@@ -300,12 +297,12 @@
 <!-- Catalogue ------------------------------------------------------------- -->
 <section class="shell">
 	{#if filtered.length === 0}
-		<div class="border border-dashed border-rule-strong px-6 py-16 text-center">
+		<div class="border-rule-strong border border-dashed px-6 py-16 text-center">
 			<p class="display-sm mb-2">No finds match those filters</p>
 			<p class="prose-note mx-auto max-w-sm">
 				Try removing a filter, or search for a site name such as Sarepta or Tiryns.
 			</p>
-			<button type="button" onclick={clearAll} class="mt-5 label text-lapis! hover:underline">
+			<button type="button" onclick={clearAll} class="label text-lapis! mt-5 hover:underline">
 				Clear all filters
 			</button>
 		</div>
@@ -313,7 +310,7 @@
 		<!-- Desktop: a table, because these rows are meant to be compared. -->
 		<table class="hidden w-full border-collapse md:table">
 			<thead>
-				<tr class="border-b border-rule-strong text-left">
+				<tr class="border-rule-strong border-b text-left">
 					<th class="label py-2.5 pr-4 font-normal">Find</th>
 					<th class="label py-2.5 pr-4 font-normal">Object</th>
 					<th class="label py-2.5 pr-4 font-normal">Findspot</th>
@@ -361,12 +358,12 @@
 							{/if}
 						</td>
 						<td class="py-3 pr-4 align-top text-sm">{entry.findspot ?? EMPTY}</td>
-						<td class="datum py-3 pr-4 align-top text-ink-muted!">
+						<td class="datum text-ink-muted! py-3 pr-4 align-top">
 							{displayField(entry, 'KTU')}
 						</td>
-						<td class="datum py-3 align-top text-right whitespace-nowrap">
+						<td class="datum py-3 text-right align-top whitespace-nowrap">
 							{entry.distanceKm !== null ? formatDistance(entry.distanceKm) : EMPTY}
-							<span class="ml-1.5 text-[0.65rem] tracking-widest text-ink-muted">
+							<span class="text-ink-muted ml-1.5 text-[0.65rem] tracking-widest">
 								{entry.compass ?? ''}
 							</span>
 						</td>
@@ -376,17 +373,17 @@
 		</table>
 
 		<!-- Mobile: the same rows as cards. -->
-		<ul class="flex flex-col gap-px bg-rule md:hidden">
+		<ul class="bg-rule flex flex-col gap-px md:hidden">
 			{#each filtered as entry (entry.uuid)}
 				<li>
 					<a href="/{entry.uuid}" class="card">
 						<span class="flex items-baseline justify-between gap-3">
 							<span class="row-name">{entry.label}</span>
-							<span class="datum shrink-0 text-ink-muted">
+							<span class="datum text-ink-muted shrink-0">
 								{entry.distanceKm !== null ? formatDistance(entry.distanceKm) : EMPTY}
 							</span>
 						</span>
-						<span class="mt-1 block text-sm text-ink-muted">
+						<span class="text-ink-muted mt-1 block text-sm">
 							{describe(entry) || EMPTY} · {entry.findspot ?? EMPTY}
 						</span>
 					</a>
@@ -586,15 +583,6 @@
 	.row-link:hover .annotated {
 		border-color: var(--lapis);
 		color: var(--lapis);
-	}
-
-	.uncertain {
-		margin-left: 0.1rem;
-		color: var(--ochre);
-		font-size: 0.7rem;
-		vertical-align: super;
-		text-decoration: none;
-		cursor: help;
 	}
 
 	/* Cards ---------------------------------------------------------------- */

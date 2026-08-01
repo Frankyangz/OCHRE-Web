@@ -25,7 +25,7 @@
 <button
 	type="button"
 	onclick={toggle}
-	class="grid size-8 place-items-center rounded-sm border border-rule text-ink-muted transition-colors hover:border-rule-strong hover:text-ink"
+	class="border-rule text-ink-muted hover:border-rule-strong hover:text-ink grid size-8 place-items-center rounded-sm border transition-colors"
 	aria-label="Switch to {theme === 'dark' ? 'light' : 'dark'} theme"
 >
 	{#if theme === 'dark'}

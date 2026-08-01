@@ -25,18 +25,22 @@
 			{page.error?.message ??
 				'That identifier is not in this set. It may belong to another OCHRE project, or the link may be mistyped.'}
 		{:else}
-			This site reads live from OCHRE at the University of Chicago. The upstream request failed,
-			so there is nothing to show. Reloading in a minute usually resolves it.
+			This site reads live from OCHRE at the University of Chicago. The upstream request failed, so
+			there is nothing to show. Reloading in a minute usually resolves it.
 		{/if}
 	</p>
 
-	<div class="flex flex-wrap items-center gap-6 border-t border-rule pt-6">
+	<div class="border-rule flex flex-wrap items-center gap-6 border-t pt-6">
 		<a href="/" class="back">
 			<span class="wedge back-wedge"></span>
 			Back to the catalogue
 		</a>
 		{#if !isNotFound}
-			<button type="button" onclick={() => location.reload()} class="label text-lapis! hover:underline">
+			<button
+				type="button"
+				onclick={() => location.reload()}
+				class="label text-lapis! hover:underline"
+			>
 				Try again
 			</button>
 		{/if}

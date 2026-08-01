@@ -28,14 +28,14 @@ as the only geography on screen.
 
 ## Stack
 
-|              |                                                   |
-| ------------ | ------------------------------------------------- |
-| Framework    | SvelteKit 2 · Svelte 5 (runes)                    |
-| Styling      | Tailwind CSS 4 over a custom token layer          |
-| Map          | MapLibre GL via `svelte-maplibre`, CARTO basemap  |
-| Data         | `ochre-sdk` against the public OCHRE API          |
-| Hosting      | Vercel, Node 22, prerendered at build             |
-| Type safety  | `svelte-check` clean, no `@ts-nocheck`            |
+|             |                                                  |
+| ----------- | ------------------------------------------------ |
+| Framework   | SvelteKit 2 · Svelte 5 (runes)                   |
+| Styling     | Tailwind CSS 4 over a custom token layer         |
+| Map         | MapLibre GL via `svelte-maplibre`, CARTO basemap |
+| Data        | `ochre-sdk` against the public OCHRE API         |
+| Hosting     | Vercel, Node 22, prerendered at build            |
+| Type safety | `svelte-check` clean, no `@ts-nocheck`           |
 
 ## Notes on the implementation
 
@@ -85,6 +85,8 @@ the UI as a marker on the value rather than being flattened away.
 ```bash
 pnpm install
 pnpm dev        # http://localhost:5173
+pnpm lint       # prettier --check + eslint
+pnpm format     # prettier --write
 pnpm test       # node:test (retry + sanitiser)
 pnpm check      # svelte-check
 pnpm build      # production build

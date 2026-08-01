@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { MapLibre, GeoJSON, LineLayer, Marker, NavigationControl } from 'svelte-maplibre';
 	import type { LayerSpecification, LngLatBoundsLike, Map as MapLibreMap } from 'maplibre-gl';
-	import { UGARIT, formatDistance } from '$lib/geo';
+	import { boundsOf, UGARIT, formatDistance } from '$lib/geo';
 	import {
 		distanceRings,
 		dispersalLines,
@@ -32,9 +32,24 @@
 
 	const located = $derived(entries.filter((entry) => entry.lat !== null && entry.lng !== null));
 	const positions = $derived(spreadOverlaps(located));
-	const rings = distanceRings();
-	const ringMarkers = ringLabels();
 	const lines = $derived(dispersalLines(located));
+
+	// Detail pages mount this map with `compact`, where the rings are never
+	// drawn — so don't build 543 coordinate pairs for them.
+	const rings = $derived(compact ? null : distanceRings());
+	const ringMarkers = $derived(compact ? null : ringLabels());
+
+	/**
+	 * Markers appear in distance order, so the dispersal reads outward. Ranked
+	 * once rather than re-sorting inside the each block, which was quadratic.
+	 */
+	const revealOrder = $derived(
+		new Map(
+			[...located]
+				.sort((a, b) => (a.distanceKm ?? 0) - (b.distanceKm ?? 0))
+				.map((entry, index) => [entry.uuid, 240 + index * 90])
+		)
+	);
 
 	let map = $state<MapLibreMap | undefined>();
 	let styleLoaded = $state(false);
@@ -74,20 +89,12 @@
 	});
 
 	/** Ugarit is always in frame — the catalogue is defined relative to it. */
-	const bounds = $derived.by((): LngLatBoundsLike => {
-		const points = [
-			[UGARIT.lng, UGARIT.lat] as [number, number],
-			...located.map((entry) => [entry.lng!, entry.lat!] as [number, number])
-		];
-
-		const lngs = points.map(([lng]) => lng);
-		const lats = points.map(([, lat]) => lat);
-
-		return [
-			[Math.min(...lngs), Math.min(...lats)],
-			[Math.max(...lngs), Math.max(...lats)]
-		];
-	});
+	const bounds = $derived(
+		(boundsOf([UGARIT, ...located.map((entry) => ({ lat: entry.lat!, lng: entry.lng! }))]) ?? [
+			[UGARIT.lng, UGARIT.lat],
+			[UGARIT.lng, UGARIT.lat]
+		]) as LngLatBoundsLike
+	);
 
 	/**
 	 * A phone-width map has no room for a 72px inset: it pushes the fit so far
@@ -97,26 +104,14 @@
 	const narrow = $derived((innerWidth.current ?? 1440) < 640);
 
 	const padding = $derived(
-		narrow
-			? 26
-			: compact
-				? 64
-				: { top: 72, bottom: 88, left: 72, right: 96 }
+		narrow ? 26 : compact ? 64 : { top: 72, bottom: 88, left: 72, right: 96 }
 	);
 
 	const active = $derived(hovered ?? selected);
 	const activeEntry = $derived(located.find((entry) => entry.uuid === active) ?? null);
-
-	/** Markers appear in distance order, so the dispersal reads outward. */
-	function revealDelay(entry: CatalogueEntry): number {
-		const order = [...located]
-			.sort((a, b) => (a.distanceKm ?? 0) - (b.distanceKm ?? 0))
-			.findIndex((candidate) => candidate.uuid === entry.uuid);
-		return 240 + order * 90;
-	}
 </script>
 
-<div class="relative isolate h-full w-full overflow-hidden bg-abyss">
+<div class="bg-abyss relative isolate h-full w-full overflow-hidden">
 	<MapLibre
 		bind:map
 		bind:loaded={styleLoaded}
@@ -137,7 +132,7 @@
 		{#if !compact}
 			<!-- Rings of constant distance from Ugarit. True circles on the sphere,
 			     so Mercator renders them as ellipses. -->
-			<GeoJSON id="rings" data={rings}>
+			<GeoJSON id="rings" data={rings ?? { type: 'FeatureCollection', features: [] }}>
 				<LineLayer
 					paint={{
 						'line-color': '#c9964a',
@@ -168,11 +163,8 @@
 		{#if !compact && !narrow}
 			<!-- Ring distances, set in the page's own mono rather than as basemap
 			     labels, so the map's only typography belongs to this catalogue. -->
-			{#each ringMarkers.features as ring, index (index)}
-				<Marker
-					lngLat={ring.geometry.coordinates as [number, number]}
-					class="pointer-events-none"
-				>
+			{#each ringMarkers?.features ?? [] as ring, index (index)}
+				<Marker lngLat={ring.geometry.coordinates as [number, number]} class="pointer-events-none">
 					<span class="ring-label">{ring.properties?.label}</span>
 				</Marker>
 			{/each}
@@ -206,7 +198,7 @@
 				<span
 					class="find"
 					class:is-active={isActive}
-					style="--reveal-delay: {compact ? 0 : revealDelay(entry)}ms"
+					style="--reveal-delay: {compact ? 0 : (revealOrder.get(entry.uuid) ?? 0)}ms"
 				>
 					<!--
 						Traced from ʾgamla (U+10382), a real letter of the Ugaritic
