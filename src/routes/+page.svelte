@@ -530,8 +530,10 @@
 
 	.feature-image {
 		width: 100%;
-		/* The excavation plate is tall; bound it so the block stays a band across
-		   the page rather than a full screen of its own. */
+		/* OCHRE only publishes a ~430 px preview of each plate, so the display
+		   size is capped at roughly its native width. Scaling it up to fill the
+		   column just renders the softness larger. */
+		max-width: 27rem;
 		max-height: 24rem;
 		object-fit: contain;
 		object-position: left center;

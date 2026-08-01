@@ -55,10 +55,10 @@ files. A single item failing upstream degrades that one row rather than taking
 down the page, and the fetch layer retries transient errors so one dropped
 connection cannot fail a build.
 
-**The interesting content is on the observations, not the objects.** Four of the
-eleven records carry notes written by named scholars, and one carries a Zotero
-bibliography — all hanging off `observations[].notes` and `bibliographies`, which
-an earlier version of this site was quietly discarding.
+**The interesting content is on the observations, not the objects.** Three of the
+eleven records carry four notes written by named scholars, and one carries a
+Zotero bibliography — all hanging off `observations[].notes` and
+`bibliographies`, which an earlier version of this site was quietly discarding.
 
 **`filterLayers` in `svelte-maplibre` runs on every `styledata` event** and hides
 _any_ layer its predicate rejects — including layers added by child components.

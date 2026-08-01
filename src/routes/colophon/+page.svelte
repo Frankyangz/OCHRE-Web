@@ -48,7 +48,7 @@
 				<h2 class="display-sm mb-3">The notes were the point</h2>
 				<p class="prose">
 					The first version of this site rendered a table of property values and nothing else. But
-					four of these eleven records carry notes written by people — an accession number from the
+					three of these eleven records carry notes written by people — an accession number from the
 					Israel Museum, a remark signed by Miller C. Prosser in June 2014 pointing at other tablets
 					found at Tell Nebi Mend and never read.
 				</p>

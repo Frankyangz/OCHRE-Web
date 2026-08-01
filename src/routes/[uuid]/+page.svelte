@@ -255,7 +255,7 @@
 						alt="{image.kind === 'hand copy'
 							? 'Scribal hand copy of the inscription on'
 							: 'Archive photograph of'} {entry.label}"
-						class="border-rule bg-surface w-full rounded-sm border"
+						class="border-rule bg-surface w-full max-w-[27rem] rounded-sm border"
 						loading="lazy"
 						decoding="async"
 						onerror={() => (failedImages = new Set([...failedImages, image.url]))}

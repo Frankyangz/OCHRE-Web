@@ -7,7 +7,7 @@
 		dispersalLines,
 		RING_DISTANCES,
 		ringLabels,
-		spreadOverlaps
+		markerOffsets
 	} from '$lib/mapdata';
 	import { innerWidth } from 'svelte/reactivity/window';
 	import type { CatalogueEntry } from '$lib/catalogue';
@@ -31,7 +31,7 @@
 	}: Props = $props();
 
 	const located = $derived(entries.filter((entry) => entry.lat !== null && entry.lng !== null));
-	const positions = $derived(spreadOverlaps(located));
+	const offsets = $derived(markerOffsets(located));
 	const lines = $derived(dispersalLines(located));
 
 	// Detail pages mount this map with `compact`, where the rings are never
@@ -187,7 +187,8 @@
 		{#each located as entry (entry.uuid)}
 			{@const isActive = active === entry.uuid}
 			<Marker
-				lngLat={positions.get(entry.uuid) ?? [entry.lng!, entry.lat!]}
+				lngLat={[entry.lng!, entry.lat!]}
+				offset={offsets.get(entry.uuid) ?? [0, 0]}
 				anchor="bottom"
 				asButton
 				onclick={() => onselect?.(entry.uuid)}

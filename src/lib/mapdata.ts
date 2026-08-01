@@ -95,7 +95,7 @@ function greatCircle(from: Point, to: Point, steps = 64): Array<[number, number]
 	});
 }
 
-/** A connector from Ugarit out to each located find. */
+/** A connector from Ugarit out to each located find, at its true coordinate. */
 export function dispersalLines(entries: CatalogueEntry[]): FeatureCollection<LineString> {
 	return {
 		type: 'FeatureCollection',
@@ -113,11 +113,21 @@ export function dispersalLines(entries: CatalogueEntry[]): FeatureCollection<Lin
 }
 
 /**
- * Two finds can share a findspot exactly (Kamid el-Loz and Sarepta each have
- * two), which would stack their markers into one. Nudge duplicates apart by a
- * few pixels' worth of degrees so both stay clickable.
+ * Screen-space nudges for finds that share a findspot exactly — Kamid el-Loz
+ * and Sarepta each have two — which would otherwise stack into a single
+ * clickable wedge.
+ *
+ * The offset is in **pixels, not degrees**. Moving the coordinate instead was
+ * the obvious approach and it was wrong twice over: at 0.16° it pushed coastal
+ * finds out into the sea, and any value small enough to stay on the coast was
+ * too small to separate two 7 px wedges. Worse, a coordinate offset drifts —
+ * zoom in and the pair slides further apart on the ground.
+ *
+ * A pixel offset leaves the anchor on the true coordinate, so the connector
+ * line still ends exactly where the object was found, and the pair reads as
+ * what it is: two objects from one site, sitting side by side.
  */
-export function spreadOverlaps(entries: CatalogueEntry[]): Map<string, [number, number]> {
+export function markerOffsets(entries: CatalogueEntry[]): Map<string, [number, number]> {
 	const byPosition = new Map<string, CatalogueEntry[]>();
 
 	for (const entry of entries) {
@@ -126,23 +136,17 @@ export function spreadOverlaps(entries: CatalogueEntry[]): Map<string, [number, 
 		byPosition.set(key, [...(byPosition.get(key) ?? []), entry]);
 	}
 
-	const positions = new Map<string, [number, number]>();
-	const OFFSET_DEG = 0.16;
+	const offsets = new Map<string, [number, number]>();
+	const SPACING_PX = 9;
 
 	for (const group of byPosition.values()) {
 		group.forEach((entry, index) => {
-			if (group.length === 1) {
-				positions.set(entry.uuid, [entry.lng!, entry.lat!]);
-				return;
-			}
-			// Fan the group around its shared point.
-			const angle = (index / group.length) * Math.PI * 2 - Math.PI / 2;
-			positions.set(entry.uuid, [
-				entry.lng! + Math.cos(angle) * OFFSET_DEG,
-				entry.lat! + Math.sin(angle) * OFFSET_DEG
-			]);
+			// Spread horizontally about the shared point, so the group stays
+			// centred on the findspot rather than hanging off one side of it.
+			const dx = (index - (group.length - 1) / 2) * SPACING_PX;
+			offsets.set(entry.uuid, [dx, 0]);
 		});
 	}
 
-	return positions;
+	return offsets;
 }
