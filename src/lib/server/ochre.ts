@@ -15,7 +15,7 @@ import { withRetries } from './retry';
 import { sanitizeHtml, toPlainText } from './sanitize';
 
 /** "Objects discovered outside the kingdom of Ugarit", in the RSTI project. */
-export const SET_UUID = '240e6e06-9d05-4210-aa83-f4190639886d';
+const SET_UUID = '240e6e06-9d05-4210-aa83-f4190639886d';
 
 type Fetch = typeof globalThis.fetch;
 
@@ -78,12 +78,12 @@ async function buildCatalogue(fetch: Fetch): Promise<Catalogue> {
  * 404s; the live endpoint is `/ochre` and needs the `preview` flag to return a
  * JPEG rather than the item's XML.
  */
-export function imageUrlFor(uuid: string): string {
+function imageUrlFor(uuid: string): string {
 	return `https://ochre.lib.uchicago.edu/ochre?uuid=${uuid}&preview`;
 }
 
 /** Rebuilds an SDK image link from its uuid so the fix survives path changes. */
-export function normaliseImageUrl(url: string | null | undefined): string | null {
+function normaliseImageUrl(url: string | null | undefined): string | null {
 	if (!url) return null;
 
 	try {
@@ -103,7 +103,7 @@ const URL_PATTERN = /(https?:\/\/[^\s<>()[\]]+[^\s<>()[\].,;:!?'"])/g;
  * blank lines, and bare URLs. Resolving it to segments here lets the component
  * render prose and links without ever touching `{@html}`.
  */
-export function toParagraphs(content: string): NoteSegment[][] {
+function toParagraphs(content: string): NoteSegment[][] {
 	return content
 		.replace(/\r\n/g, '\n')
 		.split(/\n{2,}/)
@@ -191,7 +191,7 @@ function toImages(unit: SpatialUnit | null, summary: SpatialUnit): ObjectImage[]
 }
 
 /** Fetches one spatial unit, returning `null` instead of throwing. */
-export async function fetchSpatialUnit(uuid: string, fetch: Fetch): Promise<SpatialUnit | null> {
+async function fetchSpatialUnit(uuid: string, fetch: Fetch): Promise<SpatialUnit | null> {
 	try {
 		const { error, item } = await fetchItem(uuid, 'spatialUnit', undefined, { fetch });
 		return error === null ? item : null;
@@ -208,7 +208,7 @@ export async function fetchSpatialUnit(uuid: string, fetch: Fetch): Promise<Spat
  * record carries the image, description, and context path. Neither is a
  * superset, so both are merged — summary first, so its properties win.
  */
-export function toEntry(summary: SpatialUnit, detail: SpatialUnit | null): CatalogueEntry {
+function toEntry(summary: SpatialUnit, detail: SpatialUnit | null): CatalogueEntry {
 	const unit = detail ?? summary;
 	const properties = [...collectProperties(summary), ...collectProperties(detail)];
 	const fields: Record<string, string> = {};

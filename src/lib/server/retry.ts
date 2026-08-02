@@ -1,7 +1,7 @@
 type Fetch = typeof globalThis.fetch;
 
-export const MAX_ATTEMPTS = 4;
-export const REQUEST_TIMEOUT_MS = 20_000;
+const MAX_ATTEMPTS = 4;
+const REQUEST_TIMEOUT_MS = 20_000;
 
 /**
  * Wraps a fetch so transient upstream failures are retried.
