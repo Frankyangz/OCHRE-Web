@@ -4,12 +4,16 @@ An interactive catalogue of the eleven objects bearing the Ugaritic alphabet tha
 were excavated **outside** the kingdom of Ugarit — from Tell Sukas, 35 km down the
 Syrian coast, to Tiryns in Mycenaean Greece, 1,179 km west.
 
-**Live:** https://ochre-web.vercel.app
+**Live:** https://ochre-web.vercel.app · **[Colophon](https://ochre-web.vercel.app/colophon)**
+
+![The catalogue's front page: the headline "What left Ugarit" over a dark map of the eastern Mediterranean, with Ugarit drawn as an empty ring and each find marked by a Ugaritic wedge connected back to it](docs/preview.png)
 
 Data is read from [OCHRE](https://ochre.lib.uchicago.edu/), the Online Cultural
 and Historical Research Environment at the University of Chicago, via the
 [`ochre-sdk`](https://github.com/uchicago-digitalculture-webdev/ochre-sdk).
 Nothing is checked in or hand-transcribed.
+
+Built by Yang Zhang ([@Frankyangz](https://github.com/Frankyangz)).
 
 ---
 
@@ -26,16 +30,19 @@ borders are anachronisms on a map of the Late Bronze Age, and removing them
 leaves the coastline — the thing that shaped how these objects actually moved —
 as the only geography on screen.
 
+The marker is not a generic pin but _gamla_ (U+10382), a letter of the Ugaritic
+alphabet: one impression of a triangular stylus in clay.
+
 ## Stack
 
-|             |                                                  |
-| ----------- | ------------------------------------------------ |
-| Framework   | SvelteKit 2 · Svelte 5 (runes)                   |
-| Styling     | Tailwind CSS 4 over a custom token layer         |
-| Map         | MapLibre GL via `svelte-maplibre`, CARTO basemap |
-| Data        | `ochre-sdk` against the public OCHRE API         |
-| Hosting     | Vercel, Node 22, prerendered at build            |
-| Type safety | `svelte-check` clean, no `@ts-nocheck`           |
+|           |                                                        |
+| --------- | ------------------------------------------------------ |
+| Framework | SvelteKit 2 · Svelte 5 (runes)                         |
+| Styling   | Tailwind CSS 4 over a custom token layer               |
+| Map       | MapLibre GL via `svelte-maplibre`, CARTO basemap       |
+| Data      | `ochre-sdk` against the public OCHRE API               |
+| Hosting   | Vercel, Node 22, prerendered at build                  |
+| Quality   | `svelte-check`, eslint, prettier and tests gated in CI |
 
 ## Notes on the implementation
 
@@ -60,6 +67,14 @@ eleven records carry four notes written by named scholars, and one carries a
 Zotero bibliography — all hanging off `observations[].notes` and
 `bibliographies`, which an earlier version of this site was quietly discarding.
 
+**Disambiguating overlapping markers belongs in screen space, not on the
+globe.** Two pairs of finds share a findspot exactly. Separating them by nudging
+their coordinates pushed coastal objects visibly out into the sea, and any offset
+small enough to stay on the coast was too small to separate two 7 px wedges — a
+coordinate offset also drifts apart as you zoom. The nudge is now measured in
+pixels, so the anchor stays on the true coordinate and the connector line still
+ends exactly where the object was found.
+
 **`filterLayers` in `svelte-maplibre` runs on every `styledata` event** and hides
 _any_ layer its predicate rejects — including layers added by child components.
 Filtering the basemap therefore requires explicitly allowing your own overlay
@@ -68,7 +83,8 @@ sources through, or the rings and connectors silently vanish.
 **The SDK emits stale image URLs.** `image.url` points at `/ochre/v2/ochre.php`,
 which now 404s; the live endpoint is `/ochre` and needs the `preview` flag to
 return a JPEG rather than the item's XML. `normaliseImageUrl()` rebuilds the link
-from the uuid.
+from the uuid. That preview is also the only published size (~430 px), so the
+display width is capped rather than upscaled.
 
 **Facets that do not discriminate are not filters.** Script (`Alphabetic`) and
 Language (`Ugaritic`) are constant across almost the whole set, so offering them
@@ -79,6 +95,17 @@ value become facets.
 **Uncertainty is data.** Where an excavator recorded an identification as
 uncertain, OCHRE flags it on the property value. That flag is carried through to
 the UI as a marker on the value rather than being flattened away.
+
+## Rendering untrusted markup
+
+Notes are resolved server-side into paragraphs of plain text and link segments,
+so prose renders through ordinary Svelte markup with no `{@html}` at all.
+Bibliography entries are genuinely marked up — italic titles, a DOI anchor — so
+those go through a small allowlist sanitiser
+([`src/lib/server/sanitize.ts`](src/lib/server/sanitize.ts)) that unwraps unknown
+tags, drops `script`/`style`/`iframe` with their contents, and rebuilds anchors
+from a vetted `http(s)` href. It is the only `{@html}` on the site and it is
+covered by tests.
 
 ## Running it
 
@@ -94,6 +121,11 @@ pnpm build      # production build
 
 No environment variables or API keys are required — the OCHRE API is public.
 
+Note that `pnpm build` reaches the live OCHRE API to prerender, so it depends on
+an upstream service. Transient failures are retried; a sustained outage will fail
+the build, which is the intended signal — a failed deploy leaves the last good
+site serving.
+
 ## Data and credit
 
 Records are published by the **Ras Shamra Tablet Inventory** project at the
@@ -102,4 +134,4 @@ object page links to its persistent identifier at `pi.lib.uchicago.edu`, which i
 the citable address for the record.
 
 This site is an independent presentation of that data and is not affiliated with
-the OCHRE Data Service.
+the OCHRE Data Service. The code is mine; the records are theirs.
