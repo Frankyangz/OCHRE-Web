@@ -135,3 +135,7 @@ the citable address for the record.
 
 This site is an independent presentation of that data and is not affiliated with
 the OCHRE Data Service. The code is mine; the records are theirs.
+
+## Licence
+
+Code: [MIT](LICENSE). The OCHRE records are not mine and are not covered by it.
